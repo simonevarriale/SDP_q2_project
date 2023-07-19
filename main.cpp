@@ -36,6 +36,8 @@ void read_input(const std::string& filename , Graph* G){
     for (int i = 0; i < numEdges; ++i) {
         inputFile >> source >> destination >> weight;
         G->setEdge(source, destination,weight);
+        G->incrementDegree(source);
+        G->incrementDegree(destination);
     }
 
     inputFile.close();
@@ -54,7 +56,7 @@ int main() {
 
     std::cout << "Nodes: ";
     for (auto&  n: G.getNodes()) {
-        std::cout<<n.n<<" "<<n.weight<<endl;
+        std::cout<<n.first<<" "<<n.second.weight<<endl;
     }
     std::cout << std::endl;
 
@@ -74,7 +76,21 @@ int main() {
         cout<<endl;
     }
 
+    std::cout << "Nodes: ";
+    for (auto&  n: G.getNodes()) {
+        std::cout<<n.first<<" "<<n.second.degree<<endl;
+    }
+
+    G.computeMatrixDegree();
+
+    auto mat1 = G.getMatDegree();
+    for(int i=0; i<G.num_of_nodes(); i++){
+        for(int j=0; j<G.num_of_nodes(); j++){
+            cout<<mat1[i][j];
+        }
+        cout<<endl;
+    }
+
+
     return 0;
 }
-
-
