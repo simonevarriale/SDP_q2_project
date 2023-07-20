@@ -2,6 +2,7 @@
 #include <vector>
 #include <random>
 #include "../Graph/Graph.h"
+#include <climits>
 
 typedef struct  {
     int i;
