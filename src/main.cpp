@@ -5,27 +5,7 @@
 
 using namespace std;
 extern void RSB(Graph *G, int p);
-extern void kernighanLin(Graph& graph);
-extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
-extern void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& netGains);
-
-// Function to generate a random initial bisection
-std::vector<bool> generateRandomBisection(Graph& graph) {
-    int sizeNodes = graph.num_of_nodes();
-    std::vector<bool> partitionA(sizeNodes, false);
-
-    // Use a random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 1);
-
-    for (int i = 0; i < sizeNodes; ++i) {
-        // Assign each node randomly to either set A (true) or set B (false)
-        partitionA[i] = dis(gen);
-    }
-
-    return partitionA;
-}
+extern std::vector<bool> kernighanLin(Graph& graph);
 
 void read_input(const std::string& filename , Graph* G){
 
@@ -71,10 +51,11 @@ int main() {
     
     Graph G;
 
-    read_input("./simple_graph.txt", &G);
+    read_input("./test_graph.txt", &G);
 
+    int sizeNodes = G.num_of_nodes();
     // Test the read input
-    std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
+    std::cout << "Number of nodes: " << sizeNodes << std::endl;
     std::cout << "Number of edges: " << G.num_of_edges() << std::endl;
 
     G.printNodes();
@@ -119,21 +100,26 @@ int main() {
         cout<<endl;
     }
 
-    auto partition = generateRandomBisection(G);
-    std::cout << "Initial partition: " << std::endl;
+    std::vector<bool> partitionA = kernighanLin(G);
+    std::cout << "Final partition: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << partition[i] << " ";
+        std::cout << partitionA[i] << " ";
     }
     std::cout << std::endl;
+    // std::cout << "Initial partition: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << partition[i] << " ";
+    // }
+    // std::cout << std::endl;
 
-    // RSB(&G, 2);
-    std::vector<int> netGains(G.num_of_nodes(), 0); // Net gains for each node
-    computeNetGains(G, partition, netGains);
-    std::cout << "Net gains: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << netGains[i] << " ";
-    }
-    std::cout << std::endl;
+    // // RSB(&G, 2);
+    // std::vector<int> netGains(G.num_of_nodes(), 0); // Net gains for each node
+    // computeNetGains(G, partition, netGains);
+    // std::cout << "Net gains: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << netGains[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     return 0;
 }
