@@ -4,8 +4,9 @@
 #include "./Graph/Graph.h"
 
 using namespace std;
-extern void RSB(Graph *G, int p);
+// extern void RSB(Graph *G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph);
+
 
 void read_input(const std::string& filename , Graph* G){
 
@@ -50,8 +51,10 @@ void read_input(const std::string& filename , Graph* G){
 int main() {
     
     Graph G;
-
-    read_input("./test_graph.txt", &G);
+    std::string file1 = "./simple_graph.txt";
+    std::string file2 = "./test_graph.txt";
+    std::string file3 = "./connected_graph.txt";
+    read_input(file2, &G);
 
     int sizeNodes = G.num_of_nodes();
     // Test the read input
@@ -95,31 +98,19 @@ int main() {
     cout << "Degree Matrix:" << endl;
     for(int i=0; i<G.num_of_nodes(); i++){
         for(int j=0; j<G.num_of_nodes(); j++){
-            cout<<mat1[i][j];
+            cout << mat1[i][j];
         }
-        cout<<endl;
+        cout << endl;
     }
 
     std::vector<bool> partitionA = kernighanLin(G);
+
+
     std::cout << "Final partition: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << partitionA[i] << " ";
     }
     std::cout << std::endl;
-    // std::cout << "Initial partition: " << std::endl;
-    // for (int i = 0; i < G.num_of_nodes(); ++i) {
-    //     std::cout << partition[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // // RSB(&G, 2);
-    // std::vector<int> netGains(G.num_of_nodes(), 0); // Net gains for each node
-    // computeNetGains(G, partition, netGains);
-    // std::cout << "Net gains: " << std::endl;
-    // for (int i = 0; i < G.num_of_nodes(); ++i) {
-    //     std::cout << netGains[i] << " ";
-    // }
-    // std::cout << std::endl;
 
     return 0;
 }

@@ -62,59 +62,60 @@ void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vec
     }
 }
 
-// std::vector<bool> kernighanLin(Graph& graph) {
-    // int sizeNodes = graph.num_of_nodes();
-    // int halfSize = sizeNodes / 2;
+// Original Kernighan-Lin algorithm
+// std::vector<bool> kernighanLinOG(Graph& graph) {
+//     int sizeNodes = graph.num_of_nodes();
+//     int halfSize = sizeNodes / 2;
 
-    // auto partitionA = generateRandomBisection(graph); // Initial partition A
-    // std::cout << "Initial partition: " << std::endl;
-    // for (int i = 0; i < sizeNodes; ++i) {
-    //     std::cout << partitionA[i] << " ";
-    // }
-    // std::cout << std::endl;
+//     auto partitionA = generateRandomBisection(graph); // Initial partition A
+//     std::cout << "Initial partition: " << std::endl;
+//     for (int i = 0; i < sizeNodes; ++i) {
+//         std::cout << partitionA[i] << " ";
+//     }
+//     std::cout << std::endl;
 
-    // std::vector<int> netGains(sizeNodes, 0); // Net gains for each node
-    // // Perform iterations until no further improvement can be made
-    // bool improved = true;
-    // while (improved) {
-    //     improved = false;
-    //     computeNetGains(graph, partitionA, netGains);
+//     std::vector<int> netGains(sizeNodes, 0); // Net gains for each node
+//     // Perform iterations until no further improvement can be made
+//     bool improved = true;
+//     while (improved) {
+//         improved = false;
+//         computeNetGains(graph, partitionA, netGains);
 
-    //     for (int i = 0; i < halfSize; ++i) {
-    //         int maxGainIdx = -1;
-    //         int maxGain = 0;
+//         for (int i = 0; i < halfSize; ++i) {
+//             int maxGainIdx = -1;
+//             int maxGain = 0;
 
-    //         // Find the node in set A with the maximum net gain
-    //         for (int j = 0; j < sizeNodes; ++j) {
-    //             if (!partitionA[j] && netGains[j] > maxGain) {
-    //                 maxGainIdx = j;
-    //                 maxGain = netGains[j];
-    //             }
-    //         }
+//             // Find the node in set A with the maximum net gain
+//             for (int j = 0; j < sizeNodes; ++j) {
+//                 if (!partitionA[j] && netGains[j] > maxGain) {
+//                     maxGainIdx = j;
+//                     maxGain = netGains[j];
+//                 }
+//             }
 
-    //         int nodeToMove = maxGainIdx;
-    //         partitionA[nodeToMove] = true; 
+//             int nodeToMove = maxGainIdx;
+//             partitionA[nodeToMove] = true; 
 
-    //         // Find the corresponding node in set B with the maximum net gain
-    //         for (int j = 0; j < sizeNodes; ++j) {
-    //             if (partitionA[j] && netGains[j] > maxGain) {
-    //                 maxGainIdx = j;
-    //                 maxGain = netGains[j];
-    //             }
-    //         }
+//             // Find the corresponding node in set B with the maximum net gain
+//             for (int j = 0; j < sizeNodes; ++j) {
+//                 if (partitionA[j] && netGains[j] > maxGain) {
+//                     maxGainIdx = j;
+//                     maxGain = netGains[j];
+//                 }
+//             }
 
-    //         // Check if there is an improvement in cut size after the swap
-    //         int cutBefore = calculateCutSize(graph, partitionA);
-    //         partitionA[maxGainIdx] = false;
-    //         int cutAfter = calculateCutSize(graph, partitionA);
-    //         if (cutAfter < cutBefore) {
-    //             improved = true;
-    //         } else {
-    //             partitionA[nodeToMove] = false;
-    //         }
-    //     }
-    // }
-    // return partitionA;
+//             // Check if there is an improvement in cut size after the swap
+//             int cutBefore = calculateCutSize(graph, partitionA);
+//             partitionA[maxGainIdx] = false;
+//             int cutAfter = calculateCutSize(graph, partitionA);
+//             if (cutAfter < cutBefore) {
+//                 improved = true;
+//             } else {
+//                 partitionA[nodeToMove] = false;
+//             }
+//         }
+//     }
+//     return partitionA;
 // }
 
 // Kernighan-Lin algorithm
@@ -164,7 +165,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
         }
 
         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
-        maxGain = 0;
+        maxGain = INT_MIN;
         int maxGainIdx = 0;
         for (int k = 0; k < vecGMax.size(); ++k) {
             // Calculate the sum of gains[0] to gains[k]

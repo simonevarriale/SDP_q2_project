@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <stack>
+#include <random>
 
 typedef struct{
 
@@ -55,41 +56,6 @@ class Graph {
         void printEdges();
         void printAdjacencyMatrix();
         void printDegreeMatrix();
-
-
-    bool isFullyConnected() {
-        int sizeNodes = sizeN;
-        std::vector<bool> visited(sizeNodes, false);
-
-        // Perform DFS starting from each node
-        for (int startNode = 0; startNode < sizeNodes; ++startNode) {
-            if (!visited[startNode]) {
-                std::stack<int> S;
-                S.push(startNode);
-                visited[startNode] = true;
-                while (!S.empty()) {
-                    int node = S.top();
-                    S.pop();
-                    for (const auto& neighbor : MatAdj[node]) {
-                        int neighborNode = neighbor[0]; // Get the neighbor node ID
-                        if (!visited[neighborNode]) {
-                            visited[neighborNode] = true;
-                            S.push(neighborNode);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Check if all nodes are visited
-        for (bool v : visited) {
-            if (!v) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 };
 
 
