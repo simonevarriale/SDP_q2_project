@@ -166,7 +166,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
         maxGain = 0;
         int maxGainIdx = 0;
-        for (int k = 0; k < graph.num_of_nodes(); ++k) {
+        for (int k = 0; k < vecGMax.size(); ++k) {
             // Calculate the sum of gains[0] to gains[k]
             int sum = 0;
             for (int i = 0; i <= k; ++i) {
