@@ -8,8 +8,18 @@
 
 typedef struct{
 
+    int n1;
+    int n2;
+    int weight1;
+    int weight2;
+
+} Coarse;
+
+typedef struct{
+
     int weight;
     int degree;
+    Coarse* coarse;
 
 } Node;
 
@@ -45,11 +55,14 @@ class Graph {
         std::vector<std::vector<int>> getMatDegree(){ return MatDegree;}
 
         void setNode(int n, int weight);
+        void setNode(int n, int weight, Coarse *coarse);
         void setEdge(int n1, int n2, int weight);
 
         void computeAdjacencyMatrix();
         void computeMatrixDegree();
         void incrementDegree(int idNode);
+        int returnLastID() { return Nodes.size(); }
+        void setCoarse(int n1, int n2, int weight1, int weight2);
 
         //Debug functions
         void printNodes();

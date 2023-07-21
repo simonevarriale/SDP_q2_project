@@ -5,6 +5,15 @@ void Graph::setNode(int n, int weight){
     Node value; 
     value.weight=weight;  
     value.degree=0;
+    value.coarse = nullptr;
+    Nodes.insert({n,value});
+}
+
+void Graph::setNode(int n, int weight, Coarse *coarse){   
+    Node value; 
+    value.weight=weight;  
+    value.degree=0;
+    value.coarse = coarse;
     Nodes.insert({n,value});
 }
 
@@ -15,7 +24,6 @@ void Graph::setEdge(int n1, int n2, int weight){
     value.weight=weight;  
     Edges.push_back(value);
 }
-
 
 void Graph::computeAdjacencyMatrix() {
     // Clear the existing adjacency matrix

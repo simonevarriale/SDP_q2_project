@@ -3,6 +3,7 @@
 #include <random>
 #include "../Graph/Graph.h"
 #include <climits>
+#include <utility>
 
 typedef struct  {
     int i;
@@ -196,4 +197,54 @@ std::vector<bool> kernighanLin(Graph& graph) {
 
     return partitionA;
     
+}
+
+std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
+    std::vector<std::pair<int, int>> M;
+    std::vector<bool> visited(G.num_of_nodes(), false);
+
+    std::vector<Edge> edges = G.getEdges();
+
+    // Sort the edges in decreasing order of weight
+    std::sort(edges.begin(), edges.end(), [](const Edge& e1, const Edge& e2) {
+        return e1.weight > e2.weight;
+    });
+
+    for(auto& edge : edges) {
+        if(!visited[edge.n1] && !visited[edge.n2]) {
+            M.push_back(std::make_pair(edge.n1, edge.n2));
+            visited[edge.n1] = true;
+            visited[edge.n2] = true;
+        }
+    }
+
+    return M;
+}
+
+
+Graph coarsening(Graph G) {
+    Graph G1;
+    std::map<int, Node> nodes = G.getNodes();
+
+    std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
+    Coarse coarse;
+    auto matAdj = G.getMatAdj();
+
+    for(auto& edge : M) {
+        coarse.n1 = edge.first;
+        coarse.n2 = edge.second;
+        coarse.weight1 = nodes.find(edge.first)->second.weight;
+        coarse.weight2 = nodes.find(edge.second)->second.weight;
+        G1.setNode(G1.returnLastID(), coarse.weight1 + coarse.weight2, &coarse);
+    }
+
+    //settare edge ddel nuovo grafo
+    // for(int i = 0; i < G.num_of_nodes(); i++) {
+    //         if(matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
+    //             // G1.setEdge()
+    //         }
+    //     }
+
+
+
 }
