@@ -1,4 +1,4 @@
 **.DS_Store
 **.vscode
 **.xcodeproj
-./src/main
+main
