@@ -4,6 +4,7 @@
 #include "../Graph/Graph.h"
 #include <climits>
 #include <utility>
+#include <algorithm>
 
 typedef struct  {
     int i;
@@ -227,24 +228,87 @@ Graph coarsening(Graph G) {
     std::map<int, Node> nodes = G.getNodes();
 
     std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
-    Coarse coarse;
+
+    std::cout << "Matching: " << std::endl;
+    for (const auto& edge : M) {
+        std::cout << "Node " << edge.first << " - Node " << edge.second << std::endl;
+    }
+
     auto matAdj = G.getMatAdj();
 
     for(auto& edge : M) {
-        coarse.n1 = edge.first;
-        coarse.n2 = edge.second;
-        coarse.weight1 = nodes.find(edge.first)->second.weight;
-        coarse.weight2 = nodes.find(edge.second)->second.weight;
-        G1.setNode(G1.returnLastID(), coarse.weight1 + coarse.weight2, &coarse);
+        Coarse* coarse = new Coarse;
+        coarse->n1 = edge.first;
+        coarse->n2 = edge.second;
+        coarse->weight1 = nodes.find(edge.first)->second.weight;
+        coarse->weight2 = nodes.find(edge.second)->second.weight;
+        G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
     }
 
-    //settare edge ddel nuovo grafo
-    // for(int i = 0; i < G.num_of_nodes(); i++) {
-    //         if(matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
-    //             // G1.setEdge()
-    //         }
-    //     }
+    
+    //manage unmatched nodes optimized for c++ 17
+    /*for (const auto& [id, node]: nodes) {
+        // Check if the node is not part of any matching pair
+        if (std::find_if(M.begin(), M.end(), [id](const std::pair<int, int>& edge) {
+                return edge.first == id || edge.second == id;
+            }) == M.end()) {
+            // The node is unmatched, add it to G1 with nullptr for Coarse pointer
+            G1.setNode(G1.returnLastID(), node.weight);
+        }
+    }*/
+    
+    // Process the unmatched nodes
+    for (const auto& nodePair : nodes) {
+    
+        int nodeId = nodePair.first;
+        Node& node = nodes[nodeId]; 
+        // Check if the node is not part of any matching pair
+        bool isMatched = false;
+        for (const auto& edgePair : M) {
+            if (edgePair.first == nodeId || edgePair.second == nodeId) {
+                isMatched = true;
+                break;
+            }
+        }
+        // If the node is not matched, add it to G1 with nullptr for Coarse pointer
+        if (!isMatched) {
+            G1.setNode(G1.returnLastID(), node.weight);
+        }
+    }
 
+    //settare edge del nuovo grafo
+    
+    for(auto& edge : M) {
+        for(int i=0; i<G.num_of_nodes(); i++){
 
+            if(matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
+                //dobbiamo unire edge del nodo trovato con il nodo dato dai 2 uniti
+                //cerco quindi l'id del nodo nuovo in G1 tramite gli id dei nodi che l'hanno formato
+                //forse potremmo fare una map per rendere la ricerca costante e non sequenziale
 
+                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
+                if(id!=-1){
+                    G1.setEdge(id, i, matAdj[edge.first][i][1]+matAdj[edge.second][i][1]);
+                }
+                
+            }
+            else if(matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0){
+
+                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
+                if(id!=-1){
+                    G1.setEdge(id, i, matAdj[edge.first][i][1]);
+                }
+
+            }
+            else if(matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1){
+
+                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
+                if(id!=-1){
+                    G1.setEdge(id, i, matAdj[edge.first][i][1]);
+                }
+            }
+        }
+    }
+
+    return G1;
 }

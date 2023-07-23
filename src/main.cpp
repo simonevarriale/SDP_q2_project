@@ -6,7 +6,7 @@
 using namespace std;
 // extern void RSB(Graph *G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph);
-
+extern Graph coarsening(Graph graph);
 
 void read_input(const std::string& filename , Graph* G){
 
@@ -111,6 +111,12 @@ int main() {
         std::cout << partitionA[i] << " ";
     }
     std::cout << std::endl;
+
+    //G.printGraph();
+
+    Graph G1 = coarsening(G);
+
+    G1.printGraph();
 
     return 0;
 }

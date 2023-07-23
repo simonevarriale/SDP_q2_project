@@ -13,7 +13,11 @@ void Graph::setNode(int n, int weight, Coarse *coarse){
     Node value; 
     value.weight=weight;  
     value.degree=0;
-    value.coarse = coarse;
+    value.coarse = new Coarse;
+    value.coarse->n1 = coarse->n1;
+    value.coarse->n2 = coarse->n2;
+    value.coarse->weight1 = coarse->weight1;
+    value.coarse->weight2 = coarse->weight2;
     Nodes.insert({n,value});
 }
 
@@ -92,4 +96,35 @@ void Graph::printDegreeMatrix(){
         }
         std::cout << std::endl;
     }
+}
+
+void Graph::printGraph() const {
+        std::cout << "Number of nodes: " << sizeN << std::endl;
+        std::cout << "Number of edges: " << sizeE << std::endl;
+
+        // Print the list of nodes with their weights
+        std::cout << "List of nodes and their weights:" << std::endl;
+        for (const auto& [id, node] : Nodes) {
+            std::cout << "Node " << id << ", weight: " << node.weight;
+            if (node.coarse != nullptr) {
+                std::cout << ", Coarse n1: " << node.coarse->n1 << ", Coarse n2: " << node.coarse->n2;
+            }
+            std::cout << std::endl;
+        }
+
+        // Print the list of edges with their weights
+        std::cout << "List of edges and their weights:" << std::endl;
+        for (const auto& edge : Edges) {
+            std::cout << "Edge between Node " << edge.n1 << " and Node " << edge.n2 << ", weight: " << edge.weight << std::endl;
+        }
+    }
+
+// Function to find the ID of a node given two IDs from the Coarse struct
+int Graph::findNodeIdByCoarseIds(int n1, int n2) {
+    for (const auto& [id, node] : Nodes) {
+        if (node.coarse != nullptr && node.coarse->n1 == n1 && node.coarse->n2 == n2) {
+            return id;
+        }
+    }
+    return -1; // Return -1 if the node with the given Coarse IDs is not found
 }
