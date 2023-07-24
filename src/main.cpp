@@ -7,6 +7,7 @@ using namespace std;
 // extern void RSB(Graph *G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph);
 extern Graph coarsening(Graph graph);
+extern Graph uncoarsening(Graph G1);
 
 void read_input(const std::string& filename , Graph* G){
 
@@ -54,72 +55,33 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file2, &G);
+    read_input(file1, &G);
 
-    int sizeNodes = G.num_of_nodes();
     // Test the read input
-    std::cout << "Number of nodes: " << sizeNodes << std::endl;
+    std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
     std::cout << "Number of edges: " << G.num_of_edges() << std::endl;
 
     G.printNodes();
-    // std::cout << "Nodes: " << std::endl;
-    // for (auto&  n: G.getNodes()) {
-    //     std::cout<<n.first<<" "<<n.second.weight<<endl;
-    // }
-    // std::cout << std::endl;
 
     G.printEdges();
-    // std::cout << "Edges:" << std::endl;
-    // for (auto&  edge: G.getEdges()) {
-    //     std::cout << edge.n1 << " " << edge.n2 << " " << edge.weight << std::endl;
-    // }
 
     G.computeAdjacencyMatrix();
 
-    auto mat = G.getMatAdj();
-
     G.printAdjacencyMatrix();
-    // for(int i=0; i<G.num_of_nodes(); i++){
-    //     for(int j=0; j<G.num_of_nodes(); j++){
-    //         cout<<mat[i][j][0]<<"-"<<mat[i][j][1]<<" ";
-    //     }
-    //     cout<<endl;
-    // }
-
-    G.printNodes();
-    // std::cout << "Nodes: " << std::endl;
-    // for (auto&  n: G.getNodes()) {
-    //     std::cout<<n.first<<" "<<n.second.degree<<endl;
-    // }
-
-    G.computeMatrixDegree();
-
-    auto mat1 = G.getMatDegree();
-    cout << "Degree Matrix:" << endl;
-    for(int i=0; i<G.num_of_nodes(); i++){
-        for(int j=0; j<G.num_of_nodes(); j++){
-            cout << mat1[i][j];
-        }
-        cout << endl;
-    }
+    // G.computeMatrixDegree();
 
     std::vector<bool> partitionA = kernighanLin(G);
 
-
     std::cout << "Final partition: " << std::endl;
+
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << partitionA[i] << " ";
     }
     std::cout << std::endl;
 
-    //G.printGraph();
-
     Graph G1 = coarsening(G);
 
     G1.printGraph();
-    G1.setSizeNodes(G1.getNodes().size());
-    G1.setSizeEdges(G1.getEdges().size());
-    G1.computeAdjacencyMatrix();
 
     std::vector<bool> partitionB = kernighanLin(G1);
     std::cout << "Final partition: " << std::endl;
@@ -127,6 +89,15 @@ int main() {
         std::cout << partitionB[i] << " ";
     }
     std::cout << std::endl;
+
+    Graph G2 = uncoarsening(G1);
+    std::cout << "Original Graph" << std::endl;
+    G.printEdges();
+    std::cout << "Uncoarsened Graph" << std::endl;
+    // G2.printGraph();
+    G2.printEdges();
+    // G2.printAdjacencyMatrix();
+    // G.printAdjacencyMatrix();
 
     return 0;
 }

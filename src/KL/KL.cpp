@@ -302,6 +302,7 @@ Graph coarsening(Graph G) {
 
                     if (addedEdges.find({id1, id2}) == addedEdges.end() && addedEdges.find({id2, id1}) == addedEdges.end()) {
                         G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
+                        std::cout << "id1: " << id1 << " id2: " << id2 << " weight: " << matAdj[edge.first][i][1] + matAdj[edge.second][i][1] << std::endl;
                         addedEdges.insert({id1, id2}); // Add the edge to the set
                     }
 
@@ -338,6 +339,72 @@ Graph coarsening(Graph G) {
             }
         }
     }
+    G1.setSizeNodes(G1.getNodes().size());
+    G1.setSizeEdges(G1.getEdges().size());
+    // Compute the adjacency matrix and matrix degree for G1
+    G1.computeAdjacencyMatrix();
+    // G1.computeMatrixDegree();
 
     return G1;
+}
+
+//TODO: fix edges (nodes are fine)
+Graph uncoarsening(Graph G1) {
+    Graph G;
+
+    // Get the map of nodes from G1
+    std::map<int, Node> nodes = G1.getNodes();
+
+    // Uncoarsen the matched nodes first
+    for (const auto& nodePair : nodes) {
+        int nodeId = nodePair.first;
+        const Node& node = nodePair.second;
+        if (node.coarse != nullptr) {
+            G.setNode(node.coarse->n1, node.coarse->weight1);
+            G.setNode(node.coarse->n2, node.coarse->weight2);
+            G.setEdge(node.coarse->n1, node.coarse->n2, node.weight);
+        } else {
+            G.setNode(nodeId, node.weight);
+        }
+    }
+
+    // Uncoarsen the unmatched nodes
+    for (const auto& nodePair : nodes) {
+        int nodeId = nodePair.first;
+        const Node& node = nodePair.second;
+        bool isMatched = false;
+        for (const auto& edgePair : G1.getEdges()) {
+            if (edgePair.n1 == nodeId || edgePair.n2 == nodeId) {
+                isMatched = true;
+                break;
+            }
+        }
+        if (!isMatched && node.coarse != nullptr) {
+            G.setNode(nodeId, node.weight);
+        }
+    }
+
+    // Uncoarsen the edges
+    for (const auto& edgePair : G1.getEdges()) {
+        int n1 = edgePair.n1;
+        int n2 = edgePair.n2;
+        int weight = edgePair.weight;
+
+        // Find the uncoarsened nodes corresponding to n1 and n2
+        int uncoarsened_n1 = G1.findNodeIdByCoarseSingleId(n1);
+        int uncoarsened_n2 = G1.findNodeIdByCoarseSingleId(n2);
+
+        // Add the edge to the uncoarsened graph G
+        if (uncoarsened_n1 != -1 && uncoarsened_n2 != -1) {
+            G.setEdge(uncoarsened_n1, uncoarsened_n2, weight);
+        }
+    }
+
+    G.setSizeNodes(G.getNodes().size());
+    G.setSizeEdges(G.getEdges().size());
+    // Compute the adjacency matrix and matrix degree for G
+    G.computeAdjacencyMatrix();
+    // G.computeMatrixDegree();
+
+    return G;
 }
