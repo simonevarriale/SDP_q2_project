@@ -13,26 +13,27 @@ double computeMedian(const Eigen::VectorXd& vector) {
         // If the vector size is even, take the average of the middle two values
         int mid = size / 2;
         return 0.5 * (sortedVector(mid - 1) + sortedVector(mid));
-    } else {
+    }
+    else {
         // If the vector size is odd, return the middle value
         return sortedVector(size / 2);
     }
 }
 
-void RSB(Graph *G, int p){
+void RSB(Graph* G, int p) {
 
     int sizeNodes = G->num_of_nodes();
-    Eigen::MatrixXd L(sizeNodes,sizeNodes);
+    Eigen::MatrixXd L(sizeNodes, sizeNodes);
 
     auto matDeg = G->getMatDegree();
     auto matAdj = G->getMatAdj();
 
-    //compute Laplacian matrix
+    // compute Laplacian matrix
     std::cout << "Laplacian matrix:" << std::endl;
-    for(int i=0; i<sizeNodes; i++){
-        for(int j=0; j<sizeNodes; j++){
-            L(i,j) = matDeg[i][j] - matAdj[i][j][0]*matAdj[i][j][1];
-            std::cout << L(i,j) << " ";
+    for (int i = 0; i < sizeNodes; i++) {
+        for (int j = 0; j < sizeNodes; j++) {
+            L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
+            std::cout << L(i, j) << " ";
         }
         std::cout << std::endl;
     }
@@ -41,10 +42,10 @@ void RSB(Graph *G, int p){
 
     // Eigen::VectorXd eigenvalues = solver.eigenvalues().real();
 
-
     if (eigenSolver.info() == Eigen::Success) {
-        Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); //ascending order
-        std::cout << "Eigenvectors:\n" << eigenvectors << std::endl;
+        Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); // ascending order
+        std::cout << "Eigenvectors:\n"
+            << eigenvectors << std::endl;
         // Eigen::MatrixXd sortedEigenvectors = eigenvectors.rowwise().reverse(); //descending order
         // std::cout << "Sorted eigenvectors:\n" << sortedEigenvectors << std::endl;
         std::cout << eigenvectors.col(1) << std::endl;
@@ -57,7 +58,8 @@ void RSB(Graph *G, int p){
         for (int i = 0; i < L.rows(); ++i) {
             if (fiedlerVector(i) <= medianValue) {
                 partition[i] = 0; // Assign node i to partition 0
-            } else {
+            }
+            else {
                 partition[i] = 1; // Assign node i to partition 1
             }
         }
@@ -67,10 +69,10 @@ void RSB(Graph *G, int p){
         for (int i = 0; i < L.rows(); ++i) {
             std::cout << "Node " << i << " in Partition " << partition[i] << "\n";
         }
-    } else {
+    }
+    else {
         std::cout << "Failed to compute eigenvectors." << std::endl;
     }
 
     // Eigen::VectorXi sortedIndices = eigenvalues.argsort();
-    
 }

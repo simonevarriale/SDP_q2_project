@@ -1,31 +1,32 @@
 #include "Graph.h"
 #include <iostream>
 
-void Graph::setNode(int n, int weight){   
-    Node value; 
-    value.weight=weight;  
-    value.degree=0;
+void Graph::setNode(int n, int weight) {
+    Node value;
+    value.weight = weight;
+    value.degree = 0;
     value.coarse = nullptr;
-    Nodes.insert({n,value});
+    Nodes.insert({ n, value });
 }
 
-void Graph::setNode(int n, int weight, Coarse *coarse){   
-    Node value; 
-    value.weight=weight;  
-    value.degree=0;
+void Graph::setNode(int n, int weight, Coarse* coarse) {
+    Node value;
+    value.weight = weight;
+    value.degree = 0;
     value.coarse = new Coarse;
     value.coarse->n1 = coarse->n1;
     value.coarse->n2 = coarse->n2;
     value.coarse->weight1 = coarse->weight1;
     value.coarse->weight2 = coarse->weight2;
-    Nodes.insert({n,value});
+    value.coarse->adj = coarse->adj;
+    Nodes.insert({ n, value });
 }
 
-void Graph::setEdge(int n1, int n2, int weight){   
-    Edge value; 
-    value.n1=n1; 
-    value.n2=n2;
-    value.weight=weight;  
+void Graph::setEdge(int n1, int n2, int weight) {
+    Edge value;
+    value.n1 = n1;
+    value.n2 = n2;
+    value.weight = weight;
     Edges.push_back(value);
 }
 
@@ -52,46 +53,46 @@ void Graph::computeAdjacencyMatrix() {
     }
 }
 
- void Graph::computeMatrixDegree(){
-    MatDegree.resize(sizeN, std::vector<int>(sizeN,(0)));
-    for(int i=0; i<sizeN; i++){
+void Graph::computeMatrixDegree() {
+    MatDegree.resize(sizeN, std::vector<int>(sizeN, (0)));
+    for (int i = 0; i < sizeN; i++) {
         MatDegree[i][i] = Nodes.find(i)->second.degree;
     }
 }
 
-void Graph::incrementDegree(int idNode){
+void Graph::incrementDegree(int idNode) {
     auto it = Nodes.find(idNode);
     it->second.degree++;
 }
 
-void Graph::printNodes(){
+void Graph::printNodes() {
     std::cout << "Nodes: " << std::endl;
-    for (auto&  n: Nodes) {
-        std::cout<<n.first<<" "<<n.second.weight<<std::endl;
+    for (auto& n : Nodes) {
+        std::cout << n.first << " " << n.second.weight << std::endl;
     }
 }
 
-void Graph::printEdges(){
+void Graph::printEdges() {
     std::cout << "Edges:" << std::endl;
-    for (auto&  edge: Edges) {
+    for (auto& edge : Edges) {
         std::cout << edge.n1 << " " << edge.n2 << " " << edge.weight << std::endl;
     }
 }
 
-void Graph::printAdjacencyMatrix(){
+void Graph::printAdjacencyMatrix() {
     std::cout << "Adjacency matrix:" << std::endl;
-    for (auto&  row: MatAdj) {
-        for (auto&  col: row) {
+    for (auto& row : MatAdj) {
+        for (auto& col : row) {
             std::cout << col[0] << "-" << col[1] << " ";
         }
         std::cout << std::endl;
     }
 }
 
-void Graph::printDegreeMatrix(){
+void Graph::printDegreeMatrix() {
     std::cout << "Degree matrix:" << std::endl;
-    for (auto&  row: MatDegree) {
-        for (auto&  col: row) {
+    for (auto& row : MatDegree) {
+        for (auto& col : row) {
             std::cout << col << " ";
         }
         std::cout << std::endl;
@@ -99,31 +100,31 @@ void Graph::printDegreeMatrix(){
 }
 
 void Graph::printGraph() const {
-        std::cout << "Number of nodes: " << sizeN << std::endl;
-        std::cout << "Number of edges: " << sizeE << std::endl;
+    std::cout << "Number of nodes: " << sizeN << std::endl;
+    std::cout << "Number of edges: " << sizeE << std::endl;
 
-        // Print the list of nodes with their weights
-        std::cout << "List of nodes and their weights:" << std::endl;
-        for (const auto& [id, node] : Nodes) {
-            std::cout << "Node " << id << ", weight: " << node.weight;
-            if (node.coarse != nullptr) {
-                std::cout << ", Coarse n1: " << node.coarse->n1 << ", Coarse n2: " << node.coarse->n2;
-            }
-            std::cout << std::endl;
+    // Print the list of nodes with their weights
+    std::cout << "List of nodes and their weights:" << std::endl;
+    for (const auto& [id, node] : Nodes) {
+        std::cout << "Node " << id << ", weight: " << node.weight;
+        if (node.coarse != nullptr) {
+            std::cout << ", Coarse n1: " << node.coarse->n1 << ", Coarse n2: " << node.coarse->n2;
         }
-
-        // Print the list of edges with their weights
-        std::cout << "List of edges and their weights:" << std::endl;
-        for (const auto& edge : Edges) {
-            std::cout << "Edge between Node " << edge.n1 << " and Node " << edge.n2 << ", weight: " << edge.weight << std::endl;
-        }
+        std::cout << std::endl;
     }
+
+    // Print the list of edges with their weights
+    std::cout << "List of edges and their weights:" << std::endl;
+    for (const auto& edge : Edges) {
+        std::cout << "Edge between Node " << edge.n1 << " and Node " << edge.n2 << ", weight: " << edge.weight << std::endl;
+    }
+}
 
 // Function to find the ID of a node given two IDs from the Coarse struct
 int Graph::findNodeIdByCoarseIds(int n1, int n2) {
     for (const auto& [id, node] : Nodes) {
-        if (node.coarse != nullptr && ((node.coarse->n1 == n1 && node.coarse->n2 == n2) || 
-             (node.coarse->n1 == n2 && node.coarse->n2 == n1))) {
+        if (node.coarse != nullptr && ((node.coarse->n1 == n1 && node.coarse->n2 == n2) ||
+            (node.coarse->n1 == n2 && node.coarse->n2 == n1))) {
             return id;
         }
     }
@@ -138,4 +139,12 @@ int Graph::findNodeIdByCoarseSingleId(int n) {
         }
     }
     return -1; // Return -1 if the node with the given Coarse IDs is not found
+}
+
+std::pair<int, int> Graph::getCoarseIdsById(int nodeId) {
+    auto it = Nodes.find(nodeId);
+    if (it != Nodes.end() && it->second.coarse != nullptr) {
+        return { it->second.coarse->n1, it->second.coarse->n2 };
+    }
+    return { -1, -1 }; // Return {-1, -1} if the node doesn't have valid coarse IDs.
 }

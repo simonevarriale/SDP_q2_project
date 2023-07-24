@@ -9,7 +9,7 @@ extern std::vector<bool> kernighanLin(Graph& graph);
 extern Graph coarsening(Graph graph);
 extern Graph uncoarsening(Graph G1);
 
-void read_input(const std::string& filename , Graph* G){
+void read_input(const std::string& filename, Graph* G) {
 
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
@@ -22,7 +22,7 @@ void read_input(const std::string& filename , Graph* G){
 
     int n;
     int weight;
-    
+
     // Read the number of nodes and edges
     inputFile >> numNodes >> numEdges;
 
@@ -32,7 +32,7 @@ void read_input(const std::string& filename , Graph* G){
     // Read the nodes
     for (int i = 0; i < numNodes; ++i) {
         inputFile >> n >> weight;
-        G->setNode(n,weight);
+        G->setNode(n, weight);
     }
 
     int source;
@@ -40,17 +40,16 @@ void read_input(const std::string& filename , Graph* G){
     // Read the edges
     for (int i = 0; i < numEdges; ++i) {
         inputFile >> source >> destination >> weight;
-        G->setEdge(source, destination,weight);
+        G->setEdge(source, destination, weight);
         G->incrementDegree(source);
         G->incrementDegree(destination);
     }
 
     inputFile.close();
-
 }
 
 int main() {
-    
+
     Graph G;
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
@@ -94,7 +93,7 @@ int main() {
     std::cout << "Original Graph" << std::endl;
     G.printEdges();
     std::cout << "Uncoarsened Graph" << std::endl;
-    // G2.printGraph();
+    G2.printGraph();
     G2.printEdges();
     // G2.printAdjacencyMatrix();
     // G.printAdjacencyMatrix();
