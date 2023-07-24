@@ -64,6 +64,7 @@ class Graph {
         int returnLastID() { return Nodes.size(); }
         void setCoarse(int n1, int n2, int weight1, int weight2);
         int findNodeIdByCoarseIds(int n1, int n2);
+        int findNodeIdByCoarseSingleId(int n);
 
         //Debug functions
         void printNodes();

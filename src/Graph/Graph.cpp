@@ -122,7 +122,18 @@ void Graph::printGraph() const {
 // Function to find the ID of a node given two IDs from the Coarse struct
 int Graph::findNodeIdByCoarseIds(int n1, int n2) {
     for (const auto& [id, node] : Nodes) {
-        if (node.coarse != nullptr && node.coarse->n1 == n1 && node.coarse->n2 == n2) {
+        if (node.coarse != nullptr && ((node.coarse->n1 == n1 && node.coarse->n2 == n2) || 
+             (node.coarse->n1 == n2 && node.coarse->n2 == n1))) {
+            return id;
+        }
+    }
+    return -1; // Return -1 if the node with the given Coarse IDs is not found
+}
+
+// Function to find the ID of a node given one ID from the Coarse struct
+int Graph::findNodeIdByCoarseSingleId(int n) {
+    for (const auto& [id, node] : Nodes) {
+        if (node.coarse != nullptr && (node.coarse->n1 == n || node.coarse->n2 == n)) {
             return id;
         }
     }

@@ -117,6 +117,16 @@ int main() {
     Graph G1 = coarsening(G);
 
     G1.printGraph();
+    G1.setSizeNodes(G1.getNodes().size());
+    G1.setSizeEdges(G1.getEdges().size());
+    G1.computeAdjacencyMatrix();
+
+    std::vector<bool> partitionB = kernighanLin(G1);
+    std::cout << "Final partition: " << std::endl;
+    for (int i = 0; i < G1.num_of_nodes(); ++i) {
+        std::cout << partitionB[i] << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }

@@ -5,6 +5,7 @@
 #include <climits>
 #include <utility>
 #include <algorithm>
+#include <set>
 
 typedef struct  {
     int i;
@@ -272,13 +273,21 @@ Graph coarsening(Graph G) {
         }
         // If the node is not matched, add it to G1 with nullptr for Coarse pointer
         if (!isMatched) {
-            G1.setNode(G1.returnLastID(), node.weight);
+            Coarse* coarse = new Coarse;
+            coarse->n1 = nodeId;
+            coarse->n2 = nodeId;
+            coarse->weight1 = nodes[nodeId].weight;
+            coarse->weight2 = nodes[nodeId].weight;
+            G1.setNode(G1.returnLastID(), node.weight, coarse);
         }
     }
 
+    std::map<int, Node> newNodes = G1.getNodes();
+    std::set<std::pair<int, int>> addedEdges;
+
     //settare edge del nuovo grafo
-    
     for(auto& edge : M) {
+
         for(int i=0; i<G.num_of_nodes(); i++){
 
             if(matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
@@ -286,25 +295,45 @@ Graph coarsening(Graph G) {
                 //cerco quindi l'id del nodo nuovo in G1 tramite gli id dei nodi che l'hanno formato
                 //forse potremmo fare una map per rendere la ricerca costante e non sequenziale
 
-                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                if(id!=-1){
-                    G1.setEdge(id, i, matAdj[edge.first][i][1]+matAdj[edge.second][i][1]);
+                int id1 = G1.findNodeIdByCoarseIds(edge.first, edge.second);
+                int id2 = G1.findNodeIdByCoarseSingleId(i);
+                std::cout<<"id1: "<<id1<<" id2: "<<id2<<std::endl;
+                if(id1!=-1 && id2!=-1){
+
+                    if (addedEdges.find({id1, id2}) == addedEdges.end() && addedEdges.find({id2, id1}) == addedEdges.end()) {
+                        G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
+                        addedEdges.insert({id1, id2}); // Add the edge to the set
+                    }
+
+                    
                 }
                 
             }
-            else if(matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0){
+            else if(matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0 && i!=edge.first && i!=edge.second){
 
-                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                if(id!=-1){
-                    G1.setEdge(id, i, matAdj[edge.first][i][1]);
+                int id1 = G1.findNodeIdByCoarseSingleId(edge.first);
+                int id2 = G1.findNodeIdByCoarseSingleId(i);
+                if(id1!=-1 && id2!=-1){
+
+                    if (addedEdges.find({id1, id2}) == addedEdges.end() && addedEdges.find({id2, id1}) == addedEdges.end()) {
+                        G1.setEdge(id1, id2, matAdj[edge.first][i][1]);
+                        addedEdges.insert({id1, id2}); // Add the edge to the set
+                    }
+                    
                 }
 
             }
-            else if(matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1){
+            else if(matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1 && i!=edge.first && i!=edge.second){
 
-                int id = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                if(id!=-1){
-                    G1.setEdge(id, i, matAdj[edge.first][i][1]);
+                int id1 = G1.findNodeIdByCoarseSingleId(edge.second);
+                int id2 = G1.findNodeIdByCoarseSingleId(i);
+                if(id1!=-1 && id2!=-1){
+
+                    if (addedEdges.find({id1, id2}) == addedEdges.end() && addedEdges.find({id2, id1}) == addedEdges.end()) {
+                        G1.setEdge(id1, id2, matAdj[edge.second][i][1]);
+                        addedEdges.insert({id1, id2}); // Add the edge to the set
+                    }
+                    
                 }
             }
         }
