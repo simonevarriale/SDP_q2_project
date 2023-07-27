@@ -383,8 +383,10 @@ Graph uncoarsening(Graph G1) {
     // Uncoarsen the edges
     for (const auto& node : nodes) {
         Coarse* coarse = node.second.coarse;
-
+        
         for (int i = 0; i < G.num_of_nodes(); i++) {
+            
+            /*
             if (coarse->adj[0][i][0] == 1) {
                 int n1 = coarse->n1;
                 int n2 = coarse->n2;
@@ -395,8 +397,24 @@ Graph uncoarsening(Graph G1) {
                         addedEdges.insert({ n1, n2 });
                     }
                 }
+            }*/
+            
+            if (coarse->adj[0][i][0] == 1) {
+                int n1 = coarse->n1;
+                int n2 = i;
+                int weight = coarse->adj[0][i][1];
+                if (n1 != n2) { // se il nodo 1 e 2 sono diversi
+                    if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
+                        G.setEdge(n1, n2, weight);
+                        addedEdges.insert({ n1, n2 });
+                    }
+                }
             }
+            
+
+
         }
+        std::cout<<std::endl;
     }
 
     G.setSizeEdges(G.getEdges().size());
@@ -510,3 +528,28 @@ Graph uncoarsening(Graph G1) {
 
 //     return G;
 // }
+
+std::vector<bool> multilevel_KL(Graph& G){
+
+    std::vector<bool> partition;
+    std::vector<bool> partition_uncoarse(G.num_of_nodes(),0);
+
+    Graph G1 = coarsening(G);
+    auto nodes = G1.getNodes();
+
+    partition = kernighanLin(G1);
+
+    std::pair<int,int> ids;
+
+    for(int i=0; i<G1.num_of_nodes(); i++){
+
+        ids = G1.getCoarseIdsById(i);
+        partition_uncoarse[ids.first] = partition[i];
+        partition_uncoarse[ids.second] = partition[i];
+
+    }
+
+    return partition_uncoarse;
+
+
+}
