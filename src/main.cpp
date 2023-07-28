@@ -9,6 +9,7 @@ extern std::vector<bool> kernighanLin(Graph& graph);
 extern Graph coarsening(Graph graph);
 extern Graph uncoarsening(Graph G1);
 extern std::vector<bool> multilevel_KL(Graph& graph);
+extern std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations);
 
 void read_input(const std::string& filename, Graph* G) {
 
@@ -55,7 +56,7 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file1, &G);
+    read_input(file2, &G);
 
     // Test the read input
     std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
@@ -106,6 +107,15 @@ int main() {
     std::cout << "Final partition uncoarsen: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << part[i] << " ";
+    }
+    std::cout << std::endl;
+
+
+
+     std::vector<bool> fm = fiducciaMattheyses(G,2);
+     std::cout << "Fm partition: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << fm[i] << " ";
     }
     std::cout << std::endl;
 

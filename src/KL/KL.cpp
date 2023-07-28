@@ -143,11 +143,14 @@ std::vector<bool> kernighanLin(Graph& graph) {
             
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
-                    g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
-                    if (g[i][j] > gMax.gMax) {
-                        gMax.gMax = g[i][j];
-                        gMax.i = i;
-                        gMax.j = j;
+                    //prova nodo unlocked
+                    if (!lock[i] && !lock[j]) {
+                        g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
+                        if (g[i][j] > gMax.gMax) {
+                            gMax.gMax = g[i][j];
+                            gMax.i = i;
+                            gMax.j = j;
+                        }
                     }
                 }
             }
@@ -172,9 +175,10 @@ std::vector<bool> kernighanLin(Graph& graph) {
         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
         maxGain = INT_MIN;
         int maxGainIdx = 0;
+        int sum = 0;
         for (int k = 0; k < vecGMax.size(); ++k) {
             // Calculate the sum of gains[0] to gains[k]
-            int sum = 0;
+            
             for (int i = 0; i <= k; ++i) {
                 sum += vecGMax[i].gMax;
             }
