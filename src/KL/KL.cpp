@@ -140,6 +140,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
         computeNetGains(graph, partitionA, netGains);
 
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
+            
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
                     g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
@@ -398,6 +399,7 @@ Graph uncoarsening(Graph G1) {
                     }
                 }
             }*/
+
             
             if (coarse->adj[0][i][0] == 1) {
                 int n1 = coarse->n1;
@@ -410,7 +412,20 @@ Graph uncoarsening(Graph G1) {
                     }
                 }
             }
-            
+
+            if(coarse->adj.size() > 1){
+                if (coarse->adj[1][i][0] == 1) {
+                    int n2 = coarse->n2;
+                    int n1 = i;
+                    int weight = coarse->adj[1][i][1];
+                    if (n1 != n2) { // se il nodo 1 e 2 sono diversi
+                        if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
+                            G.setEdge(n1, n2, weight);
+                            addedEdges.insert({ n1, n2 });
+                        }
+                    }
+                }
+            }
 
 
         }

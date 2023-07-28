@@ -55,7 +55,7 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file2, &G);
+    read_input(file1, &G);
 
     // Test the read input
     std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
