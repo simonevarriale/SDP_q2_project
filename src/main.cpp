@@ -47,6 +47,8 @@ void read_input(const std::string& filename, Graph* G) {
         G->incrementDegree(destination);
     }
 
+    G->computeAdjacencyMatrix();
+
     inputFile.close();
 }
 
@@ -59,63 +61,57 @@ int main() {
     read_input(file2, &G);
 
     // Test the read input
-    std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
-    std::cout << "Number of edges: " << G.num_of_edges() << std::endl;
+    // std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
+    // std::cout << "Number of edges: " << G.num_of_edges() << std::endl;
 
-    G.printNodes();
+    // G.printNodes();
 
-    G.printEdges();
+    // G.printEdges();
 
-    G.computeAdjacencyMatrix();
-
-    G.printAdjacencyMatrix();
+    // G.printAdjacencyMatrix();
     // G.computeMatrixDegree();
 
-    std::vector<bool> partitionA = kernighanLin(G);
+    // std::vector<bool> partitionA = kernighanLin(G);
+    // std::cout << "Final partition: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << partitionA[i] << " ";
+    // }
+    // std::cout << std::endl;
 
-    std::cout << "Final partition: " << std::endl;
+    // Graph G1 = coarsening(G);
 
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << partitionA[i] << " ";
-    }
-    std::cout << std::endl;
+    // G1.printGraph();
 
-    Graph G1 = coarsening(G);
+    // std::vector<bool> partitionB = kernighanLin(G1);
+    // std::cout << "Final partition KL: " << std::endl;
+    // for (int i = 0; i < G1.num_of_nodes(); ++i) {
+    //     std::cout << partitionB[i] << " ";
+    // }
+    // std::cout << std::endl;
 
-    G1.printGraph();
-
-    std::vector<bool> partitionB = kernighanLin(G1);
-    std::cout << "Final partition: " << std::endl;
-    for (int i = 0; i < G1.num_of_nodes(); ++i) {
-        std::cout << partitionB[i] << " ";
-    }
-    std::cout << std::endl;
-
-    Graph G2 = uncoarsening(G1);
-    std::cout << "Original Graph" << std::endl;
+    // Graph G2 = uncoarsening(G1);
+    // std::cout << "Original Graph" << std::endl;
     //G.printEdges();
-    G.printGraph();
-    std::cout << "Coarsened Graph" << std::endl;
-    G1.printGraph();
-    std::cout << "Uncoarsened Graph" << std::endl;
-    G2.printGraph();
+    // G.printGraph();
+    // std::cout << "Coarsened Graph" << std::endl;
+    // G1.printGraph();
+    // std::cout << "Uncoarsened Graph" << std::endl;
+    // G2.printGraph();
     //G2.printEdges();
     // G2.printAdjacencyMatrix();
     // G.printAdjacencyMatrix();
+
+    // std::vector<bool> fm = fiducciaMattheyses(G, 2);
+    // std::cout << "Fm partition: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << fm[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     std::vector<bool> part = multilevel_KL(G);
     std::cout << "Final partition uncoarsen: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << part[i] << " ";
-    }
-    std::cout << std::endl;
-
-
-
-     std::vector<bool> fm = fiducciaMattheyses(G,2);
-     std::cout << "Fm partition: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << fm[i] << " ";
     }
     std::cout << std::endl;
 

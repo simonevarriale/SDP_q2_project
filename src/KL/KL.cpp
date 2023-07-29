@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <set>
 
+#define SEQUENTIAL_THRESHOLD 4
+
 typedef struct {
     int i;
     int j;
@@ -140,7 +142,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
         computeNetGains(graph, partitionA, netGains);
 
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
-            
+
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
                     //prova nodo unlocked
@@ -178,7 +180,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
         int sum = 0;
         for (int k = 0; k < vecGMax.size(); ++k) {
             // Calculate the sum of gains[0] to gains[k]
-            
+
             for (int i = 0; i <= k; ++i) {
                 sum += vecGMax[i].gMax;
             }
@@ -232,10 +234,10 @@ Graph coarsening(Graph G) {
 
     std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
 
-    std::cout << "Matching: " << std::endl;
-    for (const auto& edge : M) {
-        std::cout << "Node " << edge.first << " - Node " << edge.second << std::endl;
-    }
+    // std::cout << "Matching: " << std::endl;
+    // for (const auto& edge : M) {
+    //     std::cout << "Node " << edge.first << " - Node " << edge.second << std::endl;
+    // }
 
     auto matAdj = G.getMatAdj();
 
@@ -301,12 +303,12 @@ Graph coarsening(Graph G) {
 
                 int id1 = G1.findNodeIdByCoarseIds(edge.first, edge.second);
                 int id2 = G1.findNodeIdByCoarseSingleId(i);
-                std::cout << "id1: " << id1 << " id2: " << id2 << std::endl;
+                // std::cout << "id1: " << id1 << " id2: " << id2 << std::endl;
                 if (id1 != -1 && id2 != -1) {
 
                     if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
                         G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
-                        std::cout << "id1: " << id1 << " id2: " << id2 << " weight: " << matAdj[edge.first][i][1] + matAdj[edge.second][i][1] << std::endl;
+                        // std::cout << "id1: " << id1 << " id2: " << id2 << " weight: " << matAdj[edge.first][i][1] + matAdj[edge.second][i][1] << std::endl;
                         addedEdges.insert({ id1, id2 }); // Add the edge to the set
                     }
                 }
@@ -388,9 +390,9 @@ Graph uncoarsening(Graph G1) {
     // Uncoarsen the edges
     for (const auto& node : nodes) {
         Coarse* coarse = node.second.coarse;
-        
+
         for (int i = 0; i < G.num_of_nodes(); i++) {
-            
+
             /*
             if (coarse->adj[0][i][0] == 1) {
                 int n1 = coarse->n1;
@@ -404,7 +406,7 @@ Graph uncoarsening(Graph G1) {
                 }
             }*/
 
-            
+
             if (coarse->adj[0][i][0] == 1) {
                 int n1 = coarse->n1;
                 int n2 = i;
@@ -417,7 +419,7 @@ Graph uncoarsening(Graph G1) {
                 }
             }
 
-            if(coarse->adj.size() > 1){
+            if (coarse->adj.size() > 1) {
                 if (coarse->adj[1][i][0] == 1) {
                     int n2 = coarse->n2;
                     int n1 = i;
@@ -433,7 +435,7 @@ Graph uncoarsening(Graph G1) {
 
 
         }
-        std::cout<<std::endl;
+        // std::cout << std::endl;
     }
 
     G.setSizeEdges(G.getEdges().size());
@@ -548,27 +550,53 @@ Graph uncoarsening(Graph G1) {
 //     return G;
 // }
 
-std::vector<bool> multilevel_KL(Graph& G){
+// Implementation of multilevel KL
+// std::vector<bool> multilevel_KL(Graph& G) {
 
-    std::vector<bool> partition;
-    std::vector<bool> partition_uncoarse(G.num_of_nodes(),0);
+//     std::vector<bool> partition;
+//     std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
 
-    Graph G1 = coarsening(G);
-    auto nodes = G1.getNodes();
+//     Graph G1 = coarsening(G);
+//     auto nodes = G1.getNodes();
 
-    partition = kernighanLin(G1);
+//     partition = kernighanLin(G1);
 
-    std::pair<int,int> ids;
+//     std::pair<int, int> ids;
 
-    for(int i=0; i<G1.num_of_nodes(); i++){
+//     for (int i = 0; i < G1.num_of_nodes(); i++) {
+//         ids = G1.getCoarseIdsById(i);
+//         partition_uncoarse[ids.first] = partition[i];
+//         partition_uncoarse[ids.second] = partition[i];
+//     }
 
-        ids = G1.getCoarseIdsById(i);
-        partition_uncoarse[ids.first] = partition[i];
-        partition_uncoarse[ids.second] = partition[i];
+//     return partition_uncoarse;
+// }
 
+//Recursive imeplementation of multilevel KL
+std::vector<bool> multilevel_KL(Graph& G) {
+
+    // Check if the graph is small enough to be partitioned using a sequential algorithm
+    if (G.num_of_nodes() <= SEQUENTIAL_THRESHOLD) {
+        // G.printGraph();
+        return kernighanLin(G);
     }
 
-    return partition_uncoarse;
+    // Coarsen the graph
+    Graph G1 = coarsening(G);
 
+    // Recursively partition the coarser graph
+    std::vector<bool> partition_coarse = multilevel_KL(G1);
 
+    // Uncoarsen the partitioning
+    std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
+    std::pair<int, int> ids;
+
+    for (int i = 0; i < G1.num_of_nodes(); i++) {
+        ids = G1.getCoarseIdsById(i);
+        partition_uncoarse[ids.first] = partition_coarse[i];
+        partition_uncoarse[ids.second] = partition_coarse[i];
+    }
+
+    // Refine the partitioning using the Kernighan-Lin algorithm
+    return kernighanLin(G);
 }

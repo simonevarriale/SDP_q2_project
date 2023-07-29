@@ -14,7 +14,8 @@ void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std:
         for (int j = 0; j < graph.num_of_nodes(); j++) {
             if (partitionA[i] != partitionA[j]) {
                 gains[i] += graph.getMatAdj()[i][j][1];
-            } else {
+            }
+            else {
                 gains[i] -= graph.getMatAdj()[i][j][1];
             }
         }
@@ -25,10 +26,12 @@ void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std:
 // Function to calculate the gain for a node when moved to the other partition
 int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains, int node, bool moveToPartitionA) {
     int gain = 0;
+
     for (int i = 0; i < graph.num_of_nodes(); i++) {
         if (partitionA[i] != moveToPartitionA) {
             gain += graph.getMatAdj()[node][i][1];
-        } else {
+        }
+        else {
             gain -= graph.getMatAdj()[node][i][1];
         }
     }
@@ -36,16 +39,49 @@ int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, std::ve
     return gain;
 }
 
+// Function to calculate the gain for a node when moved to the other partition
+//gain = (sum of weights of edges to nodes in same partition) - (sum of weights of edges to nodes in other partition) + (sum of weights of nodes in same partition) - (sum of weights of nodes in other partition)
+// int calculateNodeGain(Graph& graph, std::vector<bool>& partitionA, std::vector<int>& gains, int node, bool moveToPartitionA) {
+//     int gain = 0;
+
+//     // Calculate the gain due to edges
+//     for (int i = 0; i < graph.num_of_nodes(); i++) {
+//         if (i == node) {
+//             continue;
+//         }
+
+//         int weight = graph.getMatAdj()[node][i][1];
+//         if (partitionA[i] == moveToPartitionA) {
+//             gain += weight;
+//         }
+//         else {
+//             gain -= weight;
+//         }
+//     }
+
+//     // Calculate the gain due to nodes
+//     if (moveToPartitionA) {
+//         gain += graph.getNodes().at(node).weight;
+//     }
+//     else {
+//         gain -= graph.getNodes().at(node).weight;
+//     }
+
+//     return gain;
+// }
+
 std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
         partitionA[i] = true;
     }
-    
+
+    // Initialize the gains vector to the correct size
+    std::vector<int> gains(graph.num_of_nodes(), 0);
+
     // Compute the initial gains for each node in the graph
-    std::vector<int> gains;
     computeInitialGains(graph, partitionA, gains);
-    
+
     // Track the best partitioning solution found during the process
     std::vector<bool> bestPartitionA = partitionA;
     int bestCutSize = calculateCutSize(graph, partitionA);
@@ -55,7 +91,7 @@ std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
         int maxGain = INT_MIN;
         int maxGainNode = -1;
         bool moveToPartitionA = false;
-        
+
         for (int i = 0; i < graph.num_of_nodes(); i++) {
             // Calculate gain when moving the node to the other partition
             int gainToA = calculateNodeGain(graph, partitionA, gains, i, true);
@@ -79,7 +115,8 @@ std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
         for (int i = 0; i < graph.num_of_nodes(); i++) {
             if (partitionA[i] != partitionA[maxGainNode]) {
                 gains[i] -= 2 * graph.getMatAdj()[maxGainNode][i][1];
-            } else {
+            }
+            else {
                 gains[i] += 2 * graph.getMatAdj()[maxGainNode][i][1];
             }
         }
