@@ -208,6 +208,84 @@ std::vector<bool> kernighanLin(Graph& graph) {
     return partitionA;
 }
 
+std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
+    std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
+    std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
+    std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
+    G_Max gMax;
+    gMax.gMax = INT_MIN;
+    std::vector<G_Max> vecGMax;
+    int maxGain = 0;
+
+    do {
+        computeNetGains(graph, partitionA, netGains);
+
+        for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
+            for (int i = 0; i < graph.num_of_nodes(); i++) {
+                for (int j = i + 1; j < graph.num_of_nodes(); j++) {
+                    //prova nodo unlocked
+                    if (!lock[i] && !lock[j]) {
+                        g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
+                        if (g[i][j] > gMax.gMax) {
+                            gMax.gMax = g[i][j];
+                            gMax.i = i;
+                            gMax.j = j;
+                        }
+                    }
+                }
+            }
+
+            vecGMax.push_back(gMax);
+
+            lock[gMax.i] = true;
+            lock[gMax.j] = true;
+
+            for (int i = 0; i < graph.num_of_nodes(); i++) {
+                if (!lock[i]) {
+                    if (!partitionA[i]) {
+                        netGains[i] = netGains[i] + 2 * graph.getMatAdj()[i][gMax.i][1] - 2 * graph.getMatAdj()[i][gMax.j][1];
+                    }
+                    else {
+                        netGains[i] = netGains[i] - 2 * graph.getMatAdj()[i][gMax.i][1] + 2 * graph.getMatAdj()[i][gMax.j][1];
+                    }
+                }
+            }
+        }
+
+        // Find k, such that Gk = Sum(Pi) gains[i] is maximized
+        maxGain = INT_MIN;
+        int maxGainIdx = 0;
+        int sum = 0;
+        for (int k = 0; k < vecGMax.size(); ++k) {
+            // Calculate the sum of gains[0] to gains[k]
+
+            for (int i = 0; i <= k; ++i) {
+                sum += vecGMax[i].gMax;
+            }
+            if (sum > maxGain) {
+                maxGain = sum;
+                maxGainIdx = k;
+            }
+        }
+
+        if (maxGain > 0) {
+            for (int i = 0; i <= maxGainIdx; i++) {
+                partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+                partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+            }
+        }
+
+        // Clear the locks
+        for (int i = 0; i < graph.num_of_nodes(); ++i) {
+            lock[i] = false;
+        }
+        vecGMax.clear();
+
+    } while (maxGain <= 0);
+
+    return partitionA;
+}
+
 std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
     std::vector<std::pair<int, int>> M;
     std::vector<bool> visited(G.num_of_nodes(), false);
@@ -349,102 +427,113 @@ Graph coarsening(Graph G) {
 }
 
 // TODO: fix edges (nodes are fine)
-Graph uncoarsening(Graph G1) {
-    Graph G;
+// Graph uncoarsening(Graph G1) {
+//     Graph G;
 
-    // Get the map of nodes from G1
-    std::map<int, Node> nodes = G1.getNodes();
-    std::set<std::pair<int, int>> addedEdges;
+//     // Get the map of nodes from G1
+//     std::map<int, Node> nodes = G1.getNodes();
+//     std::set<std::pair<int, int>> addedEdges;
 
-    // Uncoarsen the matched nodes first
-    for (const auto& nodePair : nodes) {
-        int nodeId = nodePair.first;
-        const Node& node = nodePair.second;
-        if (node.coarse != nullptr) {
-            G.setNode(node.coarse->n1, node.coarse->weight1);
-            G.setNode(node.coarse->n2, node.coarse->weight2);
-            // G.setEdge(node.coarse->n1, node.coarse->n2, node.coarse->adj[0][1][1]);
-        }
-        else {
-            G.setNode(nodeId, node.weight);
-        }
+//     // Uncoarsen the matched nodes first
+//     for (const auto& nodePair : nodes) {
+//         int nodeId = nodePair.first;
+//         const Node& node = nodePair.second;
+//         if (node.coarse != nullptr) {
+//             G.setNode(node.coarse->n1, node.coarse->weight1);
+//             G.setNode(node.coarse->n2, node.coarse->weight2);
+//             // G.setEdge(node.coarse->n1, node.coarse->n2, node.coarse->adj[0][1][1]);
+//         }
+//         else {
+//             G.setNode(nodeId, node.weight);
+//         }
+//     }
+
+//     // Uncoarsen the unmatched nodes
+//     for (const auto& nodePair : nodes) {
+//         int nodeId = nodePair.first;
+//         const Node& node = nodePair.second;
+//         bool isMatched = false;
+//         for (const auto& edgePair : G1.getEdges()) {
+//             if (edgePair.n1 == nodeId || edgePair.n2 == nodeId) {
+//                 isMatched = true;
+//                 break;
+//             }
+//         }
+//         if (!isMatched && node.coarse != nullptr) {
+//             G.setNode(nodeId, node.weight);
+//         }
+//     }
+
+//     G.setSizeNodes(G.getNodes().size());
+//     // Uncoarsen the edges
+//     for (const auto& node : nodes) {
+//         Coarse* coarse = node.second.coarse;
+
+//         for (int i = 0; i < G.num_of_nodes(); i++) {
+
+//             /*
+//             if (coarse->adj[0][i][0] == 1) {
+//                 int n1 = coarse->n1;
+//                 int n2 = coarse->n2;
+//                 int weight = coarse->adj[0][i][1];
+//                 if (n1 != n2) { // se il nodo 1 e 2 sono diversi
+//                     if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
+//                         G.setEdge(n1, n2, weight);
+//                         addedEdges.insert({ n1, n2 });
+//                     }
+//                 }
+//             }*/
+
+
+//             if (coarse->adj[0][i][0] == 1) {
+//                 int n1 = coarse->n1;
+//                 int n2 = i;
+//                 int weight = coarse->adj[0][i][1];
+//                 if (n1 != n2) { // se il nodo 1 e 2 sono diversi
+//                     if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
+//                         G.setEdge(n1, n2, weight);
+//                         addedEdges.insert({ n1, n2 });
+//                     }
+//                 }
+//             }
+
+//             if (coarse->adj.size() > 1) {
+//                 if (coarse->adj[1][i][0] == 1) {
+//                     int n2 = coarse->n2;
+//                     int n1 = i;
+//                     int weight = coarse->adj[1][i][1];
+//                     if (n1 != n2) { // se il nodo 1 e 2 sono diversi
+//                         if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
+//                             G.setEdge(n1, n2, weight);
+//                             addedEdges.insert({ n1, n2 });
+//                         }
+//                     }
+//                 }
+//             }
+
+
+//         }
+//         // std::cout << std::endl;
+//     }
+
+//     G.setSizeEdges(G.getEdges().size());
+//     // Compute the adjacency matrix and matrix degree for G
+//     G.computeAdjacencyMatrix();
+//     // G.computeMatrixDegree();
+
+//     return G;
+// }
+
+std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize) {
+    std::vector<bool> uncoarsenPartition(graphSize, false);
+    for (int i = 0; i < G1.num_of_nodes(); i++) {
+        auto ids = G1.getCoarseIdsById(i);
+        uncoarsenPartition[ids.first] = partition[i];
+        uncoarsenPartition[ids.second] = partition[i];
     }
-
-    // Uncoarsen the unmatched nodes
-    for (const auto& nodePair : nodes) {
-        int nodeId = nodePair.first;
-        const Node& node = nodePair.second;
-        bool isMatched = false;
-        for (const auto& edgePair : G1.getEdges()) {
-            if (edgePair.n1 == nodeId || edgePair.n2 == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        if (!isMatched && node.coarse != nullptr) {
-            G.setNode(nodeId, node.weight);
-        }
-    }
-
-    G.setSizeNodes(G.getNodes().size());
-    // Uncoarsen the edges
-    for (const auto& node : nodes) {
-        Coarse* coarse = node.second.coarse;
-
-        for (int i = 0; i < G.num_of_nodes(); i++) {
-
-            /*
-            if (coarse->adj[0][i][0] == 1) {
-                int n1 = coarse->n1;
-                int n2 = coarse->n2;
-                int weight = coarse->adj[0][i][1];
-                if (n1 != n2) { // se il nodo 1 e 2 sono diversi
-                    if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
-                        G.setEdge(n1, n2, weight);
-                        addedEdges.insert({ n1, n2 });
-                    }
-                }
-            }*/
-
-
-            if (coarse->adj[0][i][0] == 1) {
-                int n1 = coarse->n1;
-                int n2 = i;
-                int weight = coarse->adj[0][i][1];
-                if (n1 != n2) { // se il nodo 1 e 2 sono diversi
-                    if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
-                        G.setEdge(n1, n2, weight);
-                        addedEdges.insert({ n1, n2 });
-                    }
-                }
-            }
-
-            if (coarse->adj.size() > 1) {
-                if (coarse->adj[1][i][0] == 1) {
-                    int n2 = coarse->n2;
-                    int n1 = i;
-                    int weight = coarse->adj[1][i][1];
-                    if (n1 != n2) { // se il nodo 1 e 2 sono diversi
-                        if (addedEdges.find({ n1, n2 }) == addedEdges.end() && addedEdges.find({ n2, n1 }) == addedEdges.end()) {
-                            G.setEdge(n1, n2, weight);
-                            addedEdges.insert({ n1, n2 });
-                        }
-                    }
-                }
-            }
-
-
-        }
-        // std::cout << std::endl;
-    }
-
-    G.setSizeEdges(G.getEdges().size());
-    // Compute the adjacency matrix and matrix degree for G
-    G.computeAdjacencyMatrix();
-    // G.computeMatrixDegree();
-
-    return G;
+    return uncoarsenPartition;
 }
+
 
 // Graph uncoarsening(Graph G1) {
 //     Graph G;

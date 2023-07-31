@@ -6,8 +6,9 @@
 using namespace std;
 // extern void RSB(Graph *G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph);
+extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA);
 extern Graph coarsening(Graph graph);
-extern Graph uncoarsening(Graph G1);
+extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
 extern std::vector<bool> multilevel_KL(Graph& graph);
 extern std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations);
 
@@ -58,7 +59,7 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file2, &G);
+    read_input(file3, &G);
 
     // Test the read input
     // std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
@@ -117,9 +118,25 @@ int main() {
 
     G.printGraph();
     Graph G1 = coarsening(G);
-    Graph G2 = coarsening(G1);
-    Graph U1 = uncoarsening(G2);
-    Graph U2 = uncoarsening(U1);
+    auto part = kernighanLin(G1);
+    G1.printGraph();
+    std::cout << "Final partition coarsen: " << std::endl;
+    for (int i = 0; i < G1.num_of_nodes(); ++i) {
+        std::cout << part[i] << " ";
+    }
+    std::cout << std::endl;
+    auto uncors = uncoarsening(G1, part, G.num_of_nodes());
+    std::cout << "Final partition uncoarsen: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << uncors[i] << " ";
+    }
+    std::cout << std::endl;
+    auto klPart = kernighanLin(G, uncors);
+    std::cout << "Final partition KL: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << klPart[i] << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
