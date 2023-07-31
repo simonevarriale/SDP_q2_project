@@ -108,12 +108,18 @@ int main() {
     // }
     // std::cout << std::endl;
 
-    std::vector<bool> part = multilevel_KL(G);
-    std::cout << "Final partition uncoarsen: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << part[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::vector<bool> part = multilevel_KL(G);
+    // std::cout << "Final partition uncoarsen: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << part[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    G.printGraph();
+    Graph G1 = coarsening(G);
+    Graph G2 = coarsening(G1);
+    Graph U1 = uncoarsening(G2);
+    Graph U2 = uncoarsening(U1);
 
     return 0;
 }
