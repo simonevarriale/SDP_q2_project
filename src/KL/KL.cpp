@@ -143,7 +143,7 @@ std::vector<bool> kernighanLin(Graph& graph) {
 
     do {
         computeNetGains(graph, partitionA, netGains);
-        
+
 
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
 
@@ -227,10 +227,12 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
 
     bool hasImproved = true;
     std::vector<bool> prevPartition = partitionA;
+    std::cout << "Initial partition size: " << prevPartition.size() << ", Graph size: " << graph.num_of_nodes() << std::endl;
+
 
     do {
         computeNetGains(graph, partitionA, netGains);
-        
+
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
@@ -291,6 +293,10 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
             lock[i] = false;
         }
         vecGMax.clear();
+
+        // Check for improvement in the partition
+        hasImproved = (prevPartition != partitionA);
+        prevPartition = partitionA;
 
 
     } while (maxGain <= 0 && hasImproved);
@@ -702,25 +708,25 @@ std::vector<bool> multilevel_KL(Graph& G) {
     // return kernighanLin(G);
 
     std::vector<Graph> coarsenG;
-    
+
     std::vector<bool> newPartition;
     coarsenG.push_back(G);
-    int i=0;
-    while(coarsenG[i].num_of_nodes() > SEQUENTIAL_THRESHOLD){
+    int i = 0;
+    while (coarsenG[i].num_of_nodes() > SEQUENTIAL_THRESHOLD) {
         coarsenG.push_back(coarsening(coarsenG.at(i)));
-        coarsenG[i].printGraph();
+        // coarsenG[i].printGraph();
         i++;
     }
-    coarsenG.at(coarsenG.size()-1).printGraph();
-    std::vector<bool> partition = kernighanLin(coarsenG.at(coarsenG.size()-1));
-   
+    coarsenG.at(coarsenG.size() - 1).printGraph();
+    std::vector<bool> partition = kernighanLin(coarsenG.at(coarsenG.size() - 1));
 
-    for(int i=coarsenG.size()-2; i>=0; i--){
-        newPartition = uncoarsening(coarsenG.at(i+1), partition, coarsenG.at(i).num_of_nodes());
+
+    for (int i = coarsenG.size() - 2; i >= 0; i--) {
+        newPartition = uncoarsening(coarsenG.at(i + 1), partition, coarsenG.at(i).num_of_nodes());
         partition = kernighanLin(coarsenG.at(i), newPartition);
     }
 
-    
+
     return partition;
 
 }
