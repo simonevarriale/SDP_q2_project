@@ -138,5 +138,13 @@ int main() {
     }
     std::cout << std::endl;
 
+    auto multilevel = multilevel_KL(G);
+    std::cout << "Final multilevel partition KL: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << multilevel[i] << " ";
+    }
+    std::cout << std::endl;
+    
+
     return 0;
 }

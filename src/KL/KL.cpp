@@ -138,8 +138,12 @@ std::vector<bool> kernighanLin(Graph& graph) {
     std::vector<G_Max> vecGMax;
     int maxGain = 0;
 
+    bool hasImproved = true;
+    std::vector<bool> prevPartition = partitionA;
+
     do {
         computeNetGains(graph, partitionA, netGains);
+        
 
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
 
@@ -203,7 +207,11 @@ std::vector<bool> kernighanLin(Graph& graph) {
         }
         vecGMax.clear();
 
-    } while (maxGain <= 0);
+        // Check for improvement in the partition
+        hasImproved = (prevPartition != partitionA);
+        prevPartition = partitionA;
+
+    } while (maxGain <= 0 && hasImproved);
 
     return partitionA;
 }
@@ -217,9 +225,12 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
     std::vector<G_Max> vecGMax;
     int maxGain = 0;
 
+    bool hasImproved = true;
+    std::vector<bool> prevPartition = partitionA;
+
     do {
         computeNetGains(graph, partitionA, netGains);
-
+        
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
@@ -281,7 +292,8 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
         }
         vecGMax.clear();
 
-    } while (maxGain <= 0);
+
+    } while (maxGain <= 0 && hasImproved);
 
     return partitionA;
 }
@@ -665,27 +677,50 @@ std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphS
 std::vector<bool> multilevel_KL(Graph& G) {
 
     // Check if the graph is small enough to be partitioned using a sequential algorithm
-    if (G.num_of_nodes() <= SEQUENTIAL_THRESHOLD) {
-        // G.printGraph();
-        return kernighanLin(G);
-    }
+    // if (G.num_of_nodes() <= SEQUENTIAL_THRESHOLD) {
+    //     // G.printGraph();
+    //     return kernighanLin(G);
+    // }
 
-    // Coarsen the graph
-    Graph G1 = coarsening(G);
+    // // Coarsen the graph
+    // Graph G1 = coarsening(G);
 
-    // Recursively partition the coarser graph
-    std::vector<bool> partition_coarse = multilevel_KL(G1);
+    // // Recursively partition the coarser graph
+    // std::vector<bool> partition_coarse = multilevel_KL(G1);
 
     // Uncoarsen the partitioning
-    std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
-    std::pair<int, int> ids;
+    // std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
+    // std::pair<int, int> ids;
 
-    for (int i = 0; i < G1.num_of_nodes(); i++) {
-        ids = G1.getCoarseIdsById(i);
-        partition_uncoarse[ids.first] = partition_coarse[i];
-        partition_uncoarse[ids.second] = partition_coarse[i];
+    // for (int i = 0; i < G1.num_of_nodes(); i++) {
+    //     ids = G1.getCoarseIdsById(i);
+    //     partition_uncoarse[ids.first] = partition_coarse[i];
+    //     partition_uncoarse[ids.second] = partition_coarse[i];
+    // }
+
+    // // Refine the partitioning using the Kernighan-Lin algorithm
+    // return kernighanLin(G);
+
+    std::vector<Graph> coarsenG;
+    
+    std::vector<bool> newPartition;
+    coarsenG.push_back(G);
+    int i=0;
+    while(coarsenG[i].num_of_nodes() > SEQUENTIAL_THRESHOLD){
+        coarsenG.push_back(coarsening(coarsenG.at(i)));
+        coarsenG[i].printGraph();
+        i++;
+    }
+    coarsenG.at(coarsenG.size()-1).printGraph();
+    std::vector<bool> partition = kernighanLin(coarsenG.at(coarsenG.size()-1));
+   
+
+    for(int i=coarsenG.size()-2; i>=0; i--){
+        newPartition = uncoarsening(coarsenG.at(i+1), partition, coarsenG.at(i).num_of_nodes());
+        partition = kernighanLin(coarsenG.at(i), newPartition);
     }
 
-    // Refine the partitioning using the Kernighan-Lin algorithm
-    return kernighanLin(G);
+    
+    return partition;
+
 }
