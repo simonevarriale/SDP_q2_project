@@ -5,12 +5,13 @@
 
 using namespace std;
 // extern void RSB(Graph *G, int p);
-extern std::vector<bool> kernighanLin(Graph& graph);
-extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA);
+// extern std::vector<bool> kernighanLin(Graph& graph);
+extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern Graph coarsening(Graph graph);
 extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
 extern std::vector<bool> multilevel_KL(Graph& graph);
 extern std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations);
+extern std::vector<bool> fm(Graph& graph);
 
 void read_input(const std::string& filename, Graph* G) {
 
@@ -59,7 +60,7 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file3, &G);
+    read_input(file2, &G);
 
     // Test the read input
     // std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
@@ -142,6 +143,20 @@ int main() {
     std::cout << "Final multilevel partition KL: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << multilevel[i] << " ";
+    }
+    std::cout << std::endl;
+
+    auto fmPart = fm(G);
+    std::cout << "Final partition FM: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << fmPart[i] << " ";
+    }
+    std::cout << std::endl;
+
+    auto secondFm = fiducciaMattheyses(G, 2);
+    std::cout << "Final partition FM OG: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << secondFm[i] << " ";
     }
     std::cout << std::endl;
 

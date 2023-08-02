@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <set>
 
-#define SEQUENTIAL_THRESHOLD 4
+#define SEQUENTIAL_THRESHOLD 20
 
 typedef struct {
     int i;
@@ -124,104 +124,110 @@ void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vec
 // }
 
 // Kernighan-Lin algorithm
-std::vector<bool> kernighanLin(Graph& graph) {
-    // auto partitionA = generateRandomBisection(graph); // Initial partition A
-    std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
-    for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
-        partitionA[i] = true;
+// std::vector<bool> kernighanLin(Graph& graph) {
+//     // auto partitionA = generateRandomBisection(graph); // Initial partition A
+//     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
+//     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
+//         partitionA[i] = true;
+//     }
+//     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
+//     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
+//     std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
+//     G_Max gMax;
+
+//     std::vector<G_Max> vecGMax;
+//     int maxGain = 0;
+
+//     bool hasImproved = true;
+//     std::vector<bool> prevPartition = partitionA;
+
+//     do {
+//         gMax.gMax = INT_MIN;
+//         computeNetGains(graph, partitionA, netGains);
+
+
+//         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
+
+//             for (int i = 0; i < graph.num_of_nodes(); i++) {
+//                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
+//                     //prova nodo unlocked
+//                     if (!lock[i] && !lock[j]) {
+//                         g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
+//                         if (g[i][j] > gMax.gMax) {
+//                             gMax.gMax = g[i][j];
+//                             gMax.i = i;
+//                             gMax.j = j;
+//                         }
+//                     }
+//                 }
+//             }
+
+//             vecGMax.push_back(gMax);
+
+//             lock[gMax.i] = true;
+//             lock[gMax.j] = true;
+
+//             for (int i = 0; i < graph.num_of_nodes(); i++) {
+//                 if (!lock[i]) {
+//                     if (!partitionA[i]) {
+//                         netGains[i] = netGains[i] + 2 * graph.getMatAdj()[i][gMax.i][1] - 2 * graph.getMatAdj()[i][gMax.j][1];
+//                     }
+//                     else {
+//                         netGains[i] = netGains[i] - 2 * graph.getMatAdj()[i][gMax.i][1] + 2 * graph.getMatAdj()[i][gMax.j][1];
+//                     }
+//                 }
+//             }
+//         }
+
+//         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
+//         maxGain = INT_MIN;
+//         int maxGainIdx = 0;
+//         int sum = 0;
+//         for (int k = 0; k < vecGMax.size(); ++k) {
+//             // Calculate the sum of gains[0] to gains[k]
+
+//             for (int i = 0; i <= k; ++i) {
+//                 sum += vecGMax[i].gMax;
+//             }
+//             if (sum > maxGain) {
+//                 maxGain = sum;
+//                 maxGainIdx = k;
+//             }
+//         }
+
+//         if (maxGain > 0) {
+//             for (int i = 0; i <= maxGainIdx; i++) {
+//                 partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+//                 partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+//             }
+//         }
+
+//         // Clear the locks
+//         for (int i = 0; i < graph.num_of_nodes(); ++i) {
+//             lock[i] = false;
+//         }
+//         vecGMax.clear();
+
+//         // Check for improvement in the partition
+//         hasImproved = (prevPartition != partitionA);
+//         prevPartition = partitionA;
+
+//     } while (maxGain <= 0 && hasImproved);
+
+//     return partitionA;
+// }
+
+std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) {
+    if (partitionA.empty()) {
+        partitionA.resize(graph.num_of_nodes(), false); // Initial partition A
+        for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
+            partitionA[i] = true;
+        }
     }
     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
     std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
     G_Max gMax;
-    gMax.gMax = INT_MIN;
-    std::vector<G_Max> vecGMax;
-    int maxGain = 0;
-
-    bool hasImproved = true;
-    std::vector<bool> prevPartition = partitionA;
-
-    do {
-        computeNetGains(graph, partitionA, netGains);
-
-
-        for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
-
-            for (int i = 0; i < graph.num_of_nodes(); i++) {
-                for (int j = i + 1; j < graph.num_of_nodes(); j++) {
-                    //prova nodo unlocked
-                    if (!lock[i] && !lock[j]) {
-                        g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
-                        if (g[i][j] > gMax.gMax) {
-                            gMax.gMax = g[i][j];
-                            gMax.i = i;
-                            gMax.j = j;
-                        }
-                    }
-                }
-            }
-
-            vecGMax.push_back(gMax);
-
-            lock[gMax.i] = true;
-            lock[gMax.j] = true;
-
-            for (int i = 0; i < graph.num_of_nodes(); i++) {
-                if (!lock[i]) {
-                    if (!partitionA[i]) {
-                        netGains[i] = netGains[i] + 2 * graph.getMatAdj()[i][gMax.i][1] - 2 * graph.getMatAdj()[i][gMax.j][1];
-                    }
-                    else {
-                        netGains[i] = netGains[i] - 2 * graph.getMatAdj()[i][gMax.i][1] + 2 * graph.getMatAdj()[i][gMax.j][1];
-                    }
-                }
-            }
-        }
-
-        // Find k, such that Gk = Sum(Pi) gains[i] is maximized
-        maxGain = INT_MIN;
-        int maxGainIdx = 0;
-        int sum = 0;
-        for (int k = 0; k < vecGMax.size(); ++k) {
-            // Calculate the sum of gains[0] to gains[k]
-
-            for (int i = 0; i <= k; ++i) {
-                sum += vecGMax[i].gMax;
-            }
-            if (sum > maxGain) {
-                maxGain = sum;
-                maxGainIdx = k;
-            }
-        }
-
-        if (maxGain > 0) {
-            for (int i = 0; i <= maxGainIdx; i++) {
-                partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
-                partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
-            }
-        }
-
-        // Clear the locks
-        for (int i = 0; i < graph.num_of_nodes(); ++i) {
-            lock[i] = false;
-        }
-        vecGMax.clear();
-
-        // Check for improvement in the partition
-        hasImproved = (prevPartition != partitionA);
-        prevPartition = partitionA;
-
-    } while (maxGain <= 0 && hasImproved);
-
-    return partitionA;
-}
-
-std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
-    std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
-    std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
-    std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
-    G_Max gMax;
-    gMax.gMax = INT_MIN;
     std::vector<G_Max> vecGMax;
     int maxGain = 0;
 
@@ -231,6 +237,7 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool>& partitionA) {
 
 
     do {
+        gMax.gMax = INT_MIN;
         computeNetGains(graph, partitionA, netGains);
 
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
@@ -720,12 +727,10 @@ std::vector<bool> multilevel_KL(Graph& G) {
     coarsenG.at(coarsenG.size() - 1).printGraph();
     std::vector<bool> partition = kernighanLin(coarsenG.at(coarsenG.size() - 1));
 
-
     for (int i = coarsenG.size() - 2; i >= 0; i--) {
         newPartition = uncoarsening(coarsenG.at(i + 1), partition, coarsenG.at(i).num_of_nodes());
         partition = kernighanLin(coarsenG.at(i), newPartition);
     }
-
 
     return partition;
 

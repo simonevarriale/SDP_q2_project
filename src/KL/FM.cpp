@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <random>
+#include <numeric>
 #include "../Graph/Graph.h"
 
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
@@ -69,7 +71,6 @@ int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, std::ve
 
 //     return gain;
 // }
-
 std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
@@ -136,4 +137,108 @@ std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
     }
 
     return bestPartitionA;
+}
+
+std::vector<bool> fm(Graph& graph) {
+    // Check if the graph has any edges
+    if (graph.getEdges().empty()) {
+        // If the graph has no edges, return the partition with all nodes in it
+        return std::vector<bool>(graph.num_of_nodes(), false);
+    }
+
+    std::map<int, Node> nodes = graph.getNodes();
+
+    // Compute the total weight of the nodes and edges
+    int totalWeight = 0;
+    for (auto& node : nodes) {
+        totalWeight += node.second.weight;
+    }
+    // for (const Edge& edge : graph.getEdges()) {
+    //     totalWeight += edge.weight;
+    // }
+
+    // Initialize partition A and B based on node weights
+    std::vector<bool> partitionA(graph.num_of_nodes(), false);
+    std::vector<bool> partitionB(graph.num_of_nodes(), true);
+    int currentWeight = 0;
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
+            partitionA[i] = true;
+            partitionB[i] = false;
+            currentWeight += graph.getNodeWeight(i);
+        }
+    }
+
+
+
+    // Initialize the best cut and the current cut
+    int bestCut = totalWeight;
+    int currentCut = bestCut;
+
+    // Initialize the random number generator
+    std::random_device rd;
+    std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+
+    // Repeat the algorithm until no improvement is made
+    bool improved = true;
+    while (improved) {
+        improved = false;
+
+        // Shuffle the nodes
+        std::vector<int> nodeOrder(graph.num_of_nodes());
+        std::iota(nodeOrder.begin(), nodeOrder.end(), 0);
+        std::shuffle(nodeOrder.begin(), nodeOrder.end(), gen);
+
+
+        // Move nodes from partition B to partition A
+        for (int node : nodeOrder) {
+            if (partitionB[node]) {
+                partitionA[node] = true;
+                partitionB[node] = false;
+
+                // Update the cut
+                for (const Edge& edge : graph.getEdges()) {
+                    if (edge.n1 == node) {
+                        if (partitionA[edge.n2]) {
+                            currentCut += edge.weight;
+                        }
+                        else {
+                            currentCut -= edge.weight;
+                        }
+                    }
+                    else if (edge.n2 == node) {
+                        if (partitionA[edge.n1]) {
+                            currentCut += edge.weight;
+                        }
+                        else {
+                            currentCut -= edge.weight;
+                        }
+                    }
+                }
+
+                // Check if the cut has improved
+                if (currentCut < bestCut) {
+                    bestCut = currentCut;
+                    improved = true;
+                }
+                else {
+                    partitionA[node] = false;
+                    partitionB[node] = true;
+                }
+            }
+        }
+    }
+
+    // Return the partition with the smaller cut
+    if (bestCut == totalWeight) {
+        // If the cut was not improved, return the original partition
+        return partitionA;
+    }
+    else if (currentCut == bestCut) {
+        // If the cut was improved, return the partition with the smaller cut
+        return partitionA;
+    }
+    else {
+        return partitionB;
+    }
 }

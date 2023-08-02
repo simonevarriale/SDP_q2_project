@@ -49,6 +49,9 @@ public:
     int num_of_edges() { return sizeE; }
     void setSizeNodes(int value) { sizeN = value; }
     void setSizeEdges(int value) { sizeE = value; }
+    int getNodeWeight(int nodeIndex) const {
+        return Nodes.at(nodeIndex).weight;
+    }
 
     std::map<int, Node> getNodes() { return Nodes; }
     std::vector<Edge> getEdges() { return Edges; }
