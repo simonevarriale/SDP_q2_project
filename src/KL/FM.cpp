@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <random>
 #include <numeric>
+#include <chrono>
 #include "../Graph/Graph.h"
 
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);

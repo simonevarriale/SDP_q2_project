@@ -1,6 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <unordered_set>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <climits>
 #include "./Graph/Graph.h"
 
 using namespace std;
@@ -60,7 +66,8 @@ int main() {
     std::string file1 = "./simple_graph.txt";
     std::string file2 = "./test_graph.txt";
     std::string file3 = "./connected_graph.txt";
-    read_input(file2, &G);
+    std::string file4 = "./big_graph.txt";
+    read_input(file4, &G);
 
     // Test the read input
     // std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
@@ -117,22 +124,23 @@ int main() {
     // }
     // std::cout << std::endl;
 
-    G.printGraph();
-    Graph G1 = coarsening(G);
-    auto part = kernighanLin(G1);
-    G1.printGraph();
-    std::cout << "Final partition coarsen: " << std::endl;
-    for (int i = 0; i < G1.num_of_nodes(); ++i) {
-        std::cout << part[i] << " ";
-    }
+    //G.printGraph();
+    // Graph G1 = coarsening(G);
+    // auto part = kernighanLin(G1);
+    // G1.printGraph();
+    // std::cout << "Final partition coarsen: " << std::endl;
+    // for (int i = 0; i < G1.num_of_nodes(); ++i) {
+    //     std::cout << part[i] << " ";
+    // }
+    // std::cout << std::endl;
+    // auto uncors = uncoarsening(G1, part, G.num_of_nodes());
+    // std::cout << "Final partition uncoarsen: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << uncors[i] << " ";
+    // }
+    
     std::cout << std::endl;
-    auto uncors = uncoarsening(G1, part, G.num_of_nodes());
-    std::cout << "Final partition uncoarsen: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << uncors[i] << " ";
-    }
-    std::cout << std::endl;
-    auto klPart = kernighanLin(G, uncors);
+    auto klPart = kernighanLin(G);
     std::cout << "Final partition KL: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << klPart[i] << " ";
@@ -142,23 +150,23 @@ int main() {
     auto multilevel = multilevel_KL(G);
     std::cout << "Final multilevel partition KL: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << multilevel[i] << " ";
+         std::cout << multilevel[i] << " ";
     }
     std::cout << std::endl;
 
-    auto fmPart = fm(G);
-    std::cout << "Final partition FM: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << fmPart[i] << " ";
-    }
-    std::cout << std::endl;
+    // auto fmPart = fm(G);
+    // std::cout << "Final partition FM: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << fmPart[i] << " ";
+    // }
+    // std::cout << std::endl;
 
-    auto secondFm = fiducciaMattheyses(G, 2);
-    std::cout << "Final partition FM OG: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << secondFm[i] << " ";
-    }
-    std::cout << std::endl;
+    // auto secondFm = fiducciaMattheyses(G, 2);
+    // std::cout << "Final partition FM OG: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << secondFm[i] << " ";
+    // }
+    // std::cout << std::endl;
 
 
     return 0;
