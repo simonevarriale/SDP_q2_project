@@ -4,6 +4,11 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/Dense>
 
+
+// Function to calculate the cut size between two sets A and B
+extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
+
+
 double computeMedian(const Eigen::VectorXd& vector) {
     Eigen::VectorXd sortedVector = vector;
     std::sort(sortedVector.data(), sortedVector.data() + sortedVector.size());
@@ -20,22 +25,24 @@ double computeMedian(const Eigen::VectorXd& vector) {
     }
 }
 
-void RSB(Graph* G, int p) {
+void RSB(Graph& G, int p) {
 
-    int sizeNodes = G->num_of_nodes();
+    int sizeNodes = G.num_of_nodes();
     Eigen::MatrixXd L(sizeNodes, sizeNodes);
 
-    auto matDeg = G->getMatDegree();
-    auto matAdj = G->getMatAdj();
+    G.computeAdjacencyMatrix();
+    G.computeMatrixDegree();
+    auto matDeg = G.getMatDegree();
+    auto matAdj = G.getMatAdj();
 
     // compute Laplacian matrix
-    std::cout << "Laplacian matrix:" << std::endl;
+    //std::cout << "Laplacian matrix:" << std::endl;
     for (int i = 0; i < sizeNodes; i++) {
         for (int j = 0; j < sizeNodes; j++) {
             L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
-            std::cout << L(i, j) << " ";
+            //std::cout << L(i, j) << " ";
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
 
     Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
@@ -44,17 +51,16 @@ void RSB(Graph* G, int p) {
 
     if (eigenSolver.info() == Eigen::Success) {
         Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); // ascending order
-        std::cout << "Eigenvectors:\n"
-            << eigenvectors << std::endl;
+        //std::cout << "Eigenvectors:\n" << eigenvectors << std::endl;
         // Eigen::MatrixXd sortedEigenvectors = eigenvectors.rowwise().reverse(); //descending order
         // std::cout << "Sorted eigenvectors:\n" << sortedEigenvectors << std::endl;
-        std::cout << eigenvectors.col(1) << std::endl;
+        //std::cout << eigenvectors.col(1) << std::endl;
         // Find the Fiedler vector (second smallest eigenvector)
         Eigen::VectorXd fiedlerVector = eigenvectors.col(1);
 
         // Find the median value of the Fiedler vector
         double medianValue = computeMedian(fiedlerVector);
-        std::vector<int> partition(L.rows());
+        std::vector<bool> partition(L.rows());
         for (int i = 0; i < L.rows(); ++i) {
             if (fiedlerVector(i) <= medianValue) {
                 partition[i] = 0; // Assign node i to partition 0
@@ -67,8 +73,20 @@ void RSB(Graph* G, int p) {
         // Print the partitioning result
         std::cout << "Partitioning result:\n";
         for (int i = 0; i < L.rows(); ++i) {
-            std::cout << "Node " << i << " in Partition " << partition[i] << "\n";
+            std::cout << partition[i]<< " ";
         }
+        std::cout<<std::endl;
+
+        int cumulativeWeightA = 0;
+    
+        for (int i = 0; i < G.num_of_nodes(); ++i) {
+            if (partition[i]) {
+                cumulativeWeightA += G.getNodeWeight(i);
+            } 
+        }
+        std::cout << "Weight: "<< cumulativeWeightA<<std::endl;
+        std::cout << "Cut size: "<< calculateCutSize(G,partition) <<std::endl;
+
     }
     else {
         std::cout << "Failed to compute eigenvectors." << std::endl;

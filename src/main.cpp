@@ -10,8 +10,8 @@
 #include "./Graph/Graph.h"
 
 using namespace std;
-// extern void RSB(Graph *G, int p);
-// extern std::vector<bool> kernighanLin(Graph& graph);
+extern void RSB(Graph& G, int p);
+//extern std::vector<bool> kernighanLin(Graph& graph);
 extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern Graph coarsening(Graph graph);
 extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
@@ -153,6 +153,10 @@ int main() {
          std::cout << multilevel[i] << " ";
     }
     std::cout << std::endl;
+
+    RSB(G,2);
+    
+
 
     // auto fmPart = fm(G);
     // std::cout << "Final partition FM: " << std::endl;
