@@ -296,11 +296,11 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             }
         }
 
-        // std::cout << "bucket1: " << std::endl;
-        // bucket1.print();
+        std::cout << "bucket1: " << std::endl;
+        bucket1.print();
 
-        // std::cout << "bucket2: " << std::endl;
-        // bucket2.print();
+        std::cout << "bucket2: " << std::endl;
+        bucket2.print();
 
 
 

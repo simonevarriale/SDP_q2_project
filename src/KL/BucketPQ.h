@@ -80,7 +80,9 @@ public:
         if (buckets.find(priority) == buckets.end()) {
             buckets.insert({ priority, {} });
         }
-        buckets[priority].push_back(element);
+        if (std::find(buckets[priority].begin(), buckets[priority].end(), element) == buckets[priority].end()) {
+            buckets[priority].push_back(element);
+        }
         minPriority = std::min(minPriority, priority);
         maxPriority = std::max(maxPriority, priority);
     }
