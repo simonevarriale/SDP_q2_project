@@ -16,7 +16,7 @@ extern Graph coarsening(Graph graph);
 extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
 extern std::vector<bool> multilevel_KL(Graph& graph);
 //extern std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations);
-extern std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations,std::vector<bool> partitionA = {} );
+extern std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vector<bool> partitionA = {});
 extern std::vector<bool> fm(Graph& graph);
 
 void read_input(const std::string& filename, Graph* G) {
@@ -100,6 +100,7 @@ int main() {
     std::string file6 = "./data/simple.graph";
     std::string file7 = "./data/add20.graph";
     read_input(file1, &G);
+    // read_input2(file7, &G);
 
     // G.printNodes();
 
@@ -188,10 +189,10 @@ int main() {
     std::vector<bool> partitionA;
     auto fmPart = fiducciaMattheyses2(G, 10, partitionA);
     std::cout << "Final partition FM: " << std::endl;
-     for (int i = 0; i < G.num_of_nodes(); ++i) {
-         std::cout << fmPart[i] << " ";
-     }
-     std::cout << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        std::cout << fmPart[i] << " ";
+    }
+    std::cout << std::endl;
 
     // auto secondFm = fiducciaMattheyses(G, 2);
     // std::cout << "Final partition FM OG: " << std::endl;
