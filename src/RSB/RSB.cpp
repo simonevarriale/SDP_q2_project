@@ -30,7 +30,6 @@ void RSB(Graph& G, int p) {
     int sizeNodes = G.num_of_nodes();
     Eigen::MatrixXd L(sizeNodes, sizeNodes);
 
-    G.computeAdjacencyMatrix();
     G.computeMatrixDegree();
     auto matDeg = G.getMatDegree();
     auto matAdj = G.getMatAdj();
@@ -73,19 +72,19 @@ void RSB(Graph& G, int p) {
         // Print the partitioning result
         std::cout << "Partitioning result:\n";
         for (int i = 0; i < L.rows(); ++i) {
-            std::cout << partition[i]<< " ";
+            std::cout << partition[i] << " ";
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
 
         int cumulativeWeightA = 0;
-    
+
         for (int i = 0; i < G.num_of_nodes(); ++i) {
             if (partition[i]) {
                 cumulativeWeightA += G.getNodeWeight(i);
-            } 
+            }
         }
-        std::cout << "Weight: "<< cumulativeWeightA<<std::endl;
-        std::cout << "Cut size: "<< calculateCutSize(G,partition) <<std::endl;
+        std::cout << "Weight: " << cumulativeWeightA << std::endl;
+        std::cout << "Cut size: " << calculateCutSize(G, partition) << std::endl;
 
     }
     else {

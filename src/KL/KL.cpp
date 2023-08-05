@@ -217,12 +217,12 @@ void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vec
 //     return partitionA;
 // }
 // Helper function to calculate the total weight of all nodes
-int calculateTotalWeight( Graph& graph) {
+int calculateTotalWeight(Graph& graph) {
     int totalWeight = 0;
     for (const auto& nodePair : graph.getNodes()) {
         totalWeight += nodePair.second.weight;
     }
-    std::cout<<"Total weight of nodes: "<<totalWeight<<std::endl;
+    // std::cout<<"Total weight of nodes: "<<totalWeight<<std::endl;
     return totalWeight;
 }
 
@@ -240,7 +240,7 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
         }
     }
 
-    std::cout << "Initial partition KL: " << std::endl;
+    // std::cout << "Initial partition KL: " << std::endl;
     for (int i = 0; i < graph.num_of_nodes(); ++i) {
         std::cout << partitionA[i] << " ";
     }
@@ -255,9 +255,9 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
 
     bool hasImproved = true;
     std::vector<bool> prevPartition = partitionA;
-    std::cout << "Initial partition size: " << prevPartition.size() << ", Graph size: " << graph.num_of_nodes() << ", Cut size: "<< calculateCutSize(graph, partitionA) <<std::endl;
+    // std::cout << "Initial partition size: " << prevPartition.size() << ", Graph size: " << graph.num_of_nodes() << ", Cut size: "<< calculateCutSize(graph, partitionA) <<std::endl;
 
-    
+
     int cumulativeWeightA = 0;
     int cumulativeWeightB = 0;
 
@@ -313,27 +313,28 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
             }
         }
         // Update cumulative weights after the moves
-            cumulativeWeightA = 0;
-            cumulativeWeightB = 0;
-            for (int i = 0; i < graph.num_of_nodes(); ++i) {
-                if (partitionA[i]) {
-                    cumulativeWeightA += graph.getNodeWeight(i);
-                } else {
-                    cumulativeWeightB += graph.getNodeWeight(i);
-                }
+        cumulativeWeightA = 0;
+        cumulativeWeightB = 0;
+        for (int i = 0; i < graph.num_of_nodes(); ++i) {
+            if (partitionA[i]) {
+                cumulativeWeightA += graph.getNodeWeight(i);
             }
+            else {
+                cumulativeWeightB += graph.getNodeWeight(i);
+            }
+        }
 
         if (maxGain > 0) {
             for (int i = 0; i <= maxGainIdx; i++) {
-                if(
-                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) <= 
-                    (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) + 0.5))
-                    &&  
-                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) >= 
-                    (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) - 0.5 ))
+                if (
+                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) <=
+                        (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) + 0.5))
+                    &&
+                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) >=
+                        (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) - 0.5))
 
-                    ){
-                    
+                    ) {
+
                     partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
                     partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
                 }
@@ -358,12 +359,13 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
     for (int i = 0; i < graph.num_of_nodes(); ++i) {
         if (partitionA[i]) {
             cumulativeWeightA += graph.getNodeWeight(i);
-        } else {
+        }
+        else {
             cumulativeWeightB += graph.getNodeWeight(i);
         }
     }
-    std::cout << "Cut size final: "<< calculateCutSize(graph, partitionA) <<std::endl;
-    std::cout<<"Weight partition: "<<cumulativeWeightA<<std::endl;
+    // std::cout << "Cut size final: "<< calculateCutSize(graph, partitionA) <<std::endl;
+    // std::cout<<"Weight partition: "<<cumulativeWeightA<<std::endl;
     return partitionA;
 }
 

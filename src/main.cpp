@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <random>
 #include <unordered_set>
 #include <vector>
@@ -9,9 +10,7 @@
 #include <climits>
 #include "./Graph/Graph.h"
 
-using namespace std;
 extern void RSB(Graph& G, int p);
-//extern std::vector<bool> kernighanLin(Graph& graph);
 extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern Graph coarsening(Graph graph);
 extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
@@ -60,18 +59,46 @@ void read_input(const std::string& filename, Graph* G) {
     inputFile.close();
 }
 
+void read_input2(const std::string& filename, Graph* G) {
+    std::ifstream inputFile(filename);
+    if (!inputFile.is_open()) {
+        std::cout << "Failed to open the file: " << filename << std::endl;
+        return;
+    }
+
+    int numNodes, numEdges;
+    inputFile >> numNodes >> numEdges;
+
+    G->setSizeNodes(numNodes);
+    G->setSizeEdges(numEdges);
+
+    for (int i = 0; i < numNodes; i++) {
+        G->setNode(i, 1);
+        std::string line;
+        std::getline(inputFile, line);
+        std::istringstream iss(line);
+        int adjacentNodeId;
+        while (iss >> adjacentNodeId) {
+            G->setEdge(i, adjacentNodeId - 1, 1);
+        }
+    }
+
+    G->computeAdjacencyMatrix();
+
+    inputFile.close();
+}
+
 int main() {
 
     Graph G;
-    std::string file1 = "./simple_graph.txt";
-    std::string file2 = "./test_graph.txt";
-    std::string file3 = "./connected_graph.txt";
-    std::string file4 = "./big_graph.txt";
-    read_input(file4, &G);
-
-    // Test the read input
-    // std::cout << "Number of nodes: " << G.num_of_nodes() << std::endl;
-    // std::cout << "Number of edges: " << G.num_of_edges() << std::endl;
+    std::string file1 = "./data/simple_graph.txt";
+    std::string file2 = "./data/test_graph.txt";
+    std::string file3 = "./data/connected_graph.txt";
+    std::string file4 = "./data/big_graph.txt";
+    std::string file5 = "./data/3elt.graph";
+    std::string file6 = "./data/simple.graph";
+    std::string file7 = "./data/add20.graph";
+    read_input2(file6, &G);
 
     // G.printNodes();
 
@@ -138,24 +165,24 @@ int main() {
     // for (int i = 0; i < G.num_of_nodes(); ++i) {
     //     std::cout << uncors[i] << " ";
     // }
-    
-    std::cout << std::endl;
-    auto klPart = kernighanLin(G);
-    std::cout << "Final partition KL: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-        std::cout << klPart[i] << " ";
-    }
-    std::cout << std::endl;
 
-    auto multilevel = multilevel_KL(G);
-    std::cout << "Final multilevel partition KL: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-         std::cout << multilevel[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << std::endl;
+    // auto klPart = kernighanLin(G);
+    // std::cout << "Final partition KL: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << klPart[i] << " ";
+    // }
+    // std::cout << std::endl;
 
-    RSB(G,2);
-    
+    // auto multilevel = multilevel_KL(G);
+    // std::cout << "Final multilevel partition KL: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //     std::cout << multilevel[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    RSB(G, 2);
+
 
 
     // auto fmPart = fm(G);
