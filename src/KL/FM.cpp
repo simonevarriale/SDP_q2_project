@@ -7,8 +7,10 @@
 #include <numeric>
 #include <chrono>
 #include "../Graph/Graph.h"
+#include "BucketPQ.h"
 
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
+extern int calculateTotalWeight(Graph& graph);
 
 // Function to compute the initial gain for each node in the graph
 void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
@@ -22,7 +24,7 @@ void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std:
                 gains[i] -= graph.getMatAdj()[i][j][1];
             }
         }
-        gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
+        //gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
     }
 }
 
@@ -242,4 +244,121 @@ std::vector<bool> fm(Graph& graph) {
     else {
         return partitionB;
     }
+}
+
+
+std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations,std::vector<bool> partitionA = {} ) {
+    
+    if (partitionA.empty()) {
+        partitionA.resize(graph.num_of_nodes(), false); // Initial partition A
+        // Initialize partition A and B based on node weights
+        int totalWeight = calculateTotalWeight(graph);
+        int currentWeight = 0;
+        for (int i = 0; i < graph.num_of_nodes(); i++) {
+            if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
+                partitionA[i] = true;
+                currentWeight += graph.getNodeWeight(i);
+            }
+        }
+    }
+
+    // Initialize the gains vector to the correct size
+    std::vector<int> gains(graph.num_of_nodes(), 0);
+    std::vector<bool> lock(graph.num_of_nodes(), 0);
+
+    // Compute the initial gains for each node in the graph
+    computeInitialGains(graph, partitionA, gains);
+
+    // Track the best partitioning solution found during the process
+    std::vector<bool> bestPartitionA = partitionA;
+    BucketPriorityQueue bucket1,bucket2, bucket;
+
+    int bestCutSize = calculateCutSize(graph, partitionA);
+    std::vector<int> L;
+
+    int numIterations = 0;
+    int maxGainIdx = 0;
+    int maxGain = 0;
+    
+    do {
+        int maxGain = INT_MIN;
+        int maxGainNode = -1;
+        bool moveToPartitionA = false;
+
+        for(int i=0; i<graph.num_of_nodes(); i++){
+            if(!partitionA[i]){
+                bucket1.insert(i, gains[i]);
+            }
+            else{
+                bucket2.insert(i, gains[i]);
+            }
+        }
+        
+
+        int index=0;
+        while(std::find(lock.begin(), lock.end(), false) != lock.end()){
+            
+            if(index%2==0){
+                bucket=bucket1;
+            }
+            else{
+                bucket=bucket2;
+            }
+
+            int max = bucket.extractMax();
+            L.push_back(max);
+
+            lock[max] = true;
+
+            partitionA[max] = !partitionA[max];
+            
+            
+            for (const Edge& edge : graph.getEdges()) {
+                int w = (edge.n1 == max) ? edge.n2 : edge.n1;
+                
+                if (!lock[w]) {
+                    int weight = edge.weight;
+                    gains[w] += (partitionA[max]) ? weight : -weight;
+                    if (partitionA[w]) {
+                        bucket1.insert(w, gains[w]);
+                        bucket2.insert(w, 0); // To avoid errors when extracting from an empty queue
+                    } else {
+                        bucket2.insert(w, gains[w]);
+                        bucket1.insert(w, 0);
+                    }
+                }
+            }
+            
+            
+            int sum = 0;
+            int n = std::min(std::count(partitionA.begin(), partitionA.end(), true), std::count(partitionA.begin(), partitionA.end(), false));
+            
+
+            //problem
+            for (int k = 0; k < n; ++k) {
+                sum += gains[L[k]];
+                if (sum > maxGain) {
+                    maxGain = sum;
+                    maxGainIdx = k;
+                }
+            }
+            
+
+            if (maxGain > 0) {
+                // Apply changes to the partition based on the maxGainIdx
+                for (int i = 0; i <= maxGainIdx; ++i) {
+                    int v = L[i];
+                    partitionA[v] = !partitionA[v];
+                }
+            }
+            
+
+        }
+
+
+        
+       
+    } while (maxGain <= 0 && numIterations<maxIterations);
+
+    return partitionA;
 }
