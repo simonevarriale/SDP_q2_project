@@ -224,7 +224,8 @@ int calculateTotalWeight(Graph& graph) {
 }
 
 std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) {
-    if (partitionA.empty()) {
+
+    /*if (partitionA.empty()) {
         partitionA.resize(graph.num_of_nodes(), false); // Initial partition A
         // Initialize partition A and B based on node weights
         int totalWeight = calculateTotalWeight(graph);
@@ -235,13 +236,15 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
                 currentWeight += graph.getNodeWeight(i);
             }
         }
+    }*/
+    if (partitionA.empty()) {
+        partitionA.resize(graph.num_of_nodes(), false); // Initial partition A
+        // Initialize partition A and B based on node weights
+        for (int i = 0; i < graph.num_of_nodes() / 2; i++) {
+            partitionA[i] = true;
+        }
     }
 
-    // std::cout << "Initial partition KL: " << std::endl;
-    // for (int i = 0; i < graph.num_of_nodes(); ++i) {
-    //     std::cout << partitionA[i] << " ";
-    // }
-    // std::cout << std::endl;
 
     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
@@ -261,7 +264,6 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
     do {
         gMax.gMax = INT_MIN;
         computeNetGains(graph, partitionA, netGains);
-
         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
             for (int i = 0; i < graph.num_of_nodes(); i++) {
                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
@@ -313,7 +315,7 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
         cumulativeWeightA = 0;
         cumulativeWeightB = 0;
         for (int i = 0; i < graph.num_of_nodes(); ++i) {
-            if (partitionA[i]) {
+            if (!partitionA[i]) {
                 cumulativeWeightA += graph.getNodeWeight(i);
             }
             else {
@@ -323,18 +325,39 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
 
         if (maxGain > 0) {
             for (int i = 0; i <= maxGainIdx; i++) {
-                if (
-                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) <=
-                        (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) + 0.5))
-                    &&
-                    (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) >=
-                        (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) - 0.5))
 
-                    ) {
+                if (!partitionA[vecGMax[i].i]) {
 
-                    partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
-                    partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+                    if (
+                        (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) <=
+                            (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j)) * 1.2)
+                        &&
+                        (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) >=
+                            (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j)) * 0.8)
+
+                        ) {
+
+                        partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+                        partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+                    }
+
                 }
+                else {
+                    if (
+                        (cumulativeWeightA + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) <=
+                            (cumulativeWeightB - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j)) * 1.2)
+                        &&
+                        (cumulativeWeightA + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) >=
+                            (cumulativeWeightB - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j)) * 0.8)
+
+                        ) {
+                        partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+                        partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+                    }
+
+                }
+
+
             }
         }
 
@@ -347,8 +370,6 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
         // Check for improvement in the partition
         hasImproved = (prevPartition != partitionA);
         prevPartition = partitionA;
-
-
     } while (maxGain <= 0 && hasImproved);
 
     cumulativeWeightA = 0;
@@ -787,5 +808,175 @@ std::vector<bool> multilevel_KL(Graph& G) {
     }
 
     return partition;
+
+}
+
+// Function to compute the initial gain for each node in the graph
+void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
+    gains.resize(graph.num_of_nodes(), 0);
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        for (int j = 0; j < graph.num_of_nodes(); j++) {
+            if (partitionA[i] != partitionA[j]) {
+                gains[i] += graph.getMatAdj()[i][j][1];
+            }
+            else {
+                gains[i] -= graph.getMatAdj()[i][j][1];
+            }
+        }
+        //gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
+    }
+}
+
+std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) {
+
+    if (partitionA.empty()) {
+        partitionA.resize(graph.num_of_nodes(), false); // Initial partition A
+        // Initialize partition A and B based on node weights
+        for (int i = 0; i < graph.num_of_nodes() / 2; i++) {
+            partitionA[i] = true;
+        }
+    }
+
+
+    std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
+    std::vector<int> gains(graph.num_of_nodes(), 0);  // Net gains for each node
+    std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
+    G_Max gMax;
+    std::vector<G_Max> vecGMax;
+    int maxGain = 0;
+
+    bool hasImproved = true;
+    std::vector<bool> prevPartition = partitionA;
+    // std::cout << "Initial partition size: " << prevPartition.size() << ", Graph size: " << graph.num_of_nodes() << ", Cut size: "<< calculateCutSize(graph, partitionA) <<std::endl;
+
+
+    int cumulativeWeightA = 0;
+    int cumulativeWeightB = 0;
+    std::vector<std::pair<int, int>> L;
+
+    computeInitialGains(graph, partitionA, gains);
+
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        for (int j = 0; j < graph.num_of_nodes(); j++) {
+            g[i][j] = gains[i] + gains[j] - 2 * graph.getMatAdj()[i][j][1];
+        }
+    }
+
+    do {
+        gMax.gMax = INT_MIN;
+        L.clear();
+        lock.resize(graph.num_of_nodes(), false);
+
+
+        for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
+            for (int i = 0; i < graph.num_of_nodes(); i++) {
+                if (!lock[i]) {
+                    for (int j = 0; j < graph.num_of_nodes(); j++) {
+                        if (partitionA[i] != partitionA[j] && !lock[j]) {
+                            if (g[i][j] > gMax.gMax) {
+                                gMax.gMax = g[i][j];
+                                gMax.i = i;
+                                gMax.j = j;
+                            }
+                        }
+                    }
+                }
+            }
+            //update the whole gains vector
+            //update g with all neighbors of i and j 
+            //update fm
+
+        }
+
+        // Find k, such that Gk = Sum(Pi) gains[i] is maximized
+        maxGain = INT_MIN;
+        int maxGainIdx = 0;
+        int sum = 0;
+        for (int k = 0; k < vecGMax.size(); ++k) {
+            // Calculate the sum of gains[0] to gains[k]
+
+            for (int i = 0; i <= k; ++i) {
+                sum += vecGMax[i].gMax;
+            }
+            if (sum > maxGain) {
+                maxGain = sum;
+                maxGainIdx = k;
+            }
+        }
+        // Update cumulative weights after the moves
+        cumulativeWeightA = 0;
+        cumulativeWeightB = 0;
+        for (int i = 0; i < graph.num_of_nodes(); ++i) {
+            if (!partitionA[i]) {
+                cumulativeWeightA += graph.getNodeWeight(i);
+            }
+            else {
+                cumulativeWeightB += graph.getNodeWeight(i);
+            }
+        }
+
+        if (maxGain > 0) {
+            for (int i = 0; i <= maxGainIdx; i++) {
+
+                if (!partitionA[vecGMax[i].i]) {
+                    if (
+                        (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) <=
+                            (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j)) * 1.2)
+                        &&
+                        (cumulativeWeightA - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j) >=
+                            (cumulativeWeightB + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j)) * 0.8)
+
+                        ) {
+
+                        partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+                        partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+                    }
+
+                }
+                else {
+                    if (
+                        (cumulativeWeightA + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) <=
+                            (cumulativeWeightB - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j)) * 1.2)
+                        &&
+                        (cumulativeWeightA + graph.getNodeWeight(vecGMax[i].i) - graph.getNodeWeight(vecGMax[i].j) >=
+                            (cumulativeWeightB - graph.getNodeWeight(vecGMax[i].i) + graph.getNodeWeight(vecGMax[i].j)) * 0.8)
+
+                        ) {
+                        partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+                        partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+                    }
+
+                }
+
+
+            }
+        }
+
+        // Clear the locks
+        for (int i = 0; i < graph.num_of_nodes(); ++i) {
+            lock[i] = false;
+        }
+        vecGMax.clear();
+
+        // Check for improvement in the partition
+        hasImproved = (prevPartition != partitionA);
+        prevPartition = partitionA;
+
+
+    } while (maxGain <= 0 && hasImproved);
+
+    cumulativeWeightA = 0;
+    cumulativeWeightB = 0;
+    for (int i = 0; i < graph.num_of_nodes(); ++i) {
+        if (partitionA[i]) {
+            cumulativeWeightA += graph.getNodeWeight(i);
+        }
+        else {
+            cumulativeWeightB += graph.getNodeWeight(i);
+        }
+    }
+    // std::cout << "Cut size final: "<< calculateCutSize(graph, partitionA) <<std::endl;
+    // std::cout<<"Weight partition: "<<cumulativeWeightA<<std::endl;
+    return partitionA;
 
 }
