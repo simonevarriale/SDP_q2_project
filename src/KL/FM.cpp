@@ -246,6 +246,22 @@ int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, int nod
 //     }
 // }
 
+//balance factor of 1.0 is perfectly balanced, 0.0 or 2.0 is completely unbalanced
+double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA) {
+    double weightA = 0.0;
+    double weightB = 0.0;
+
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        if (partitionA[i]) {
+            weightA += graph.getNodeWeight(i);
+        }
+        else {
+            weightB += graph.getNodeWeight(i);
+        }
+    }
+
+    return std::min(weightA, weightB) / std::max(weightA, weightB);
+}
 
 std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vector<bool> partitionA = {}) {
 
@@ -325,7 +341,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
         // while (std::find(lock.begin(), lock.end(), false) != lock.end()) {
         while (index < lock.size()) {
-            
+
             if (index % 2 == 0) {
                 bucket = bucket1;
             }
@@ -337,7 +353,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
             if (!bucket.isEmpty()) {
                 int max = bucket.extractMax();
-                
+
                 L.push_back(max);
                 lock[max] = true;
                 partitionA[max] = !partitionA[max];
@@ -369,9 +385,9 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                         }
                     }
                 }
-                        
-                        
-                
+
+
+
             }
 
             index++;
@@ -393,22 +409,25 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             for (int i = 0; i <= maxGainIdx; ++i) {
                 int v = L[i];
                 if (
-                    (cumulativeWeightA - graph.getNodeWeight(v)  <=
-                        (cumulativeWeightB + graph.getNodeWeight(v))*1.1 )
+                    (cumulativeWeightA - graph.getNodeWeight(v) <=
+                        (cumulativeWeightB + graph.getNodeWeight(v)) * 1.1)
                     &&
                     (cumulativeWeightA - graph.getNodeWeight(v) >=
-                        (cumulativeWeightB + graph.getNodeWeight(v)*0.9))
+                        (cumulativeWeightB + graph.getNodeWeight(v) * 0.9))
 
                     ) {
-                        
-                        partitionA[v] = !partitionA[v];
-                    }
+
+                    partitionA[v] = !partitionA[v];
+                }
             }
         }
 
 
         numIterations++;
     } while (maxGain <= 0 && numIterations < maxIterations);
+
+    std::cout << "Partition balance factor: " << calculateBalanceFactor(graph, partitionA) << std::endl;
+    std::cout << "Cut size: " << calculateCutSize(graph, partitionA) << std::endl;
 
     return partitionA;
 }

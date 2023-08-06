@@ -15,6 +15,18 @@ typedef struct {
     int gMax;
 } G_Max;
 
+int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA) {
+    int cutSize = 0;
+
+    for (const Edge& edge : graph.getEdges()) {
+        if (partitionA[edge.n1] != partitionA[edge.n2]) {
+            cutSize += edge.weight;
+        }
+    }
+
+    return cutSize;
+}
+
 // Function to generate a random initial bisection
 std::vector<bool> generateRandomBisection(Graph& graph) {
     int sizeNodes = graph.num_of_nodes();
@@ -31,21 +43,6 @@ std::vector<bool> generateRandomBisection(Graph& graph) {
     }
 
     return partitionA;
-}
-
-// Function to calculate the cut size between two sets A and B
-int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA) {
-    int cutSize = 0;
-    auto matAdj = graph.getMatAdj();
-
-    for (int i = 0; i < graph.num_of_nodes(); ++i) {
-        for (int j = i + 1; j < graph.num_of_nodes(); ++j) {
-            if (partitionA[i] != partitionA[j]) {
-                cutSize += matAdj[i][j][1];
-            }
-        }
-    }
-    return cutSize;
 }
 
 // Function to compute the net gains for each node in set A
