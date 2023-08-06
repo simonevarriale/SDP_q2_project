@@ -8,6 +8,7 @@
 #include <numeric>
 #include <random>
 #include <climits>
+#include <chrono>
 #include "./Graph/Graph.h"
 
 extern void RSB(Graph& G, int p);
@@ -99,8 +100,8 @@ int main() {
     std::string file5 = "./data/3elt.graph";
     std::string file6 = "./data/simple.graph";
     std::string file7 = "./data/add20.graph";
-    read_input(file1, &G);
-    // read_input2(file7, &G);
+    read_input(file4, &G);
+    //read_input2(file6, &G);
 
     // G.printNodes();
 
@@ -168,13 +169,19 @@ int main() {
     //     std::cout << uncors[i] << " ";
     // }
 
-    // std::cout << std::endl;
-    // auto klPart = kernighanLin(G);
-    // std::cout << "Final partition KL: " << std::endl;
-    // for (int i = 0; i < G.num_of_nodes(); ++i) {
-    //     std::cout << klPart[i] << " ";
-    // }
-    // std::cout << std::endl;
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+    auto klPart = kernighanLin(G);
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = endTime - startTime;
+    // Print the execution time
+    std::cout << "Execution time KL: " << duration.count() << " seconds" << std::endl;
+
+    std::cout << "Final partition KL: " << std::endl;
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+          std::cout << klPart[i] << " ";
+      }
+    std::cout << std::endl;
 
     // auto multilevel = multilevel_KL(G);
     // std::cout << "Final multilevel partition KL: " << std::endl;
@@ -187,7 +194,16 @@ int main() {
 
 
     std::vector<bool> partitionA;
+    startTime = std::chrono::high_resolution_clock::now();
     auto fmPart = fiducciaMattheyses2(G, 10, partitionA);
+
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
+    
+    // Print the execution time
+    std::cout << "Execution time FM: " << duration.count() << " seconds" << std::endl;
+
+
     std::cout << "Final partition FM: " << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         std::cout << fmPart[i] << " ";

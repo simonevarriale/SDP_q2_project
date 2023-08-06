@@ -241,10 +241,10 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
     }
 
     // std::cout << "Initial partition KL: " << std::endl;
-    for (int i = 0; i < graph.num_of_nodes(); ++i) {
-        std::cout << partitionA[i] << " ";
-    }
-    std::cout << std::endl;
+    // for (int i = 0; i < graph.num_of_nodes(); ++i) {
+    //     std::cout << partitionA[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node

@@ -74,177 +74,177 @@ int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, int nod
 
 //     return gain;
 // }
-std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
-    std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
-    for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
-        partitionA[i] = true;
-    }
+// std::vector<bool> fiducciaMattheyses(Graph& graph, int maxIterations) {
+//     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
+//     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
+//         partitionA[i] = true;
+//     }
 
-    // Initialize the gains vector to the correct size
-    std::vector<int> gains(graph.num_of_nodes(), 0);
+//     // Initialize the gains vector to the correct size
+//     std::vector<int> gains(graph.num_of_nodes(), 0);
 
-    // Compute the initial gains for each node in the graph
-    computeInitialGains(graph, partitionA, gains);
+//     // Compute the initial gains for each node in the graph
+//     computeInitialGains(graph, partitionA, gains);
 
-    // Track the best partitioning solution found during the process
-    std::vector<bool> bestPartitionA = partitionA;
-    int bestCutSize = calculateCutSize(graph, partitionA);
+//     // Track the best partitioning solution found during the process
+//     std::vector<bool> bestPartitionA = partitionA;
+//     int bestCutSize = calculateCutSize(graph, partitionA);
 
-    int numIterations = 0;
-    while (numIterations < maxIterations) {
-        int maxGain = INT_MIN;
-        int maxGainNode = -1;
-        bool moveToPartitionA = false;
+//     int numIterations = 0;
+//     while (numIterations < maxIterations) {
+//         int maxGain = INT_MIN;
+//         int maxGainNode = -1;
+//         bool moveToPartitionA = false;
 
-        for (int i = 0; i < graph.num_of_nodes(); i++) {
-            // Calculate gain when moving the node to the other partition
-            int gainToA = calculateNodeGain(graph, partitionA, i, true);
-            int gainToB = calculateNodeGain(graph, partitionA, i, false);
-            int gain = std::abs(gainToA - gainToB);
+//         for (int i = 0; i < graph.num_of_nodes(); i++) {
+//             // Calculate gain when moving the node to the other partition
+//             int gainToA = calculateNodeGain(graph, partitionA, i, true);
+//             int gainToB = calculateNodeGain(graph, partitionA, i, false);
+//             int gain = std::abs(gainToA - gainToB);
 
-            if (gain > maxGain) {
-                maxGain = gain;
-                maxGainNode = i;
-                moveToPartitionA = (gainToA >= gainToB);
-            }
-        }
+//             if (gain > maxGain) {
+//                 maxGain = gain;
+//                 maxGainNode = i;
+//                 moveToPartitionA = (gainToA >= gainToB);
+//             }
+//         }
 
-        // If no improvement is found, stop the algorithm
-        if (maxGain <= 0) {
-            break;
-        }
+//         // If no improvement is found, stop the algorithm
+//         if (maxGain <= 0) {
+//             break;
+//         }
 
-        // Move the selected node to the other partition and update gains
-        partitionA[maxGainNode] = moveToPartitionA;
-        for (int i = 0; i < graph.num_of_nodes(); i++) {
-            if (partitionA[i] != partitionA[maxGainNode]) {
-                gains[i] -= 2 * graph.getMatAdj()[maxGainNode][i][1];
-            }
-            else {
-                gains[i] += 2 * graph.getMatAdj()[maxGainNode][i][1];
-            }
-        }
+//         // Move the selected node to the other partition and update gains
+//         partitionA[maxGainNode] = moveToPartitionA;
+//         for (int i = 0; i < graph.num_of_nodes(); i++) {
+//             if (partitionA[i] != partitionA[maxGainNode]) {
+//                 gains[i] -= 2 * graph.getMatAdj()[maxGainNode][i][1];
+//             }
+//             else {
+//                 gains[i] += 2 * graph.getMatAdj()[maxGainNode][i][1];
+//             }
+//         }
 
-        // Update the balance of the partitions
+//         // Update the balance of the partitions
 
-        // Calculate the cut size for the current partitioning
-        int currentCutSize = calculateCutSize(graph, partitionA);
+//         // Calculate the cut size for the current partitioning
+//         int currentCutSize = calculateCutSize(graph, partitionA);
 
-        // Track the best partitioning solution found so far
-        if (currentCutSize < bestCutSize) {
-            bestCutSize = currentCutSize;
-            bestPartitionA = partitionA;
-        }
+//         // Track the best partitioning solution found so far
+//         if (currentCutSize < bestCutSize) {
+//             bestCutSize = currentCutSize;
+//             bestPartitionA = partitionA;
+//         }
 
-        numIterations++;
-    }
+//         numIterations++;
+//     }
 
-    return bestPartitionA;
-}
+//     return bestPartitionA;
+// }
 
-std::vector<bool> fm(Graph& graph) {
-    // Check if the graph has any edges
-    if (graph.getEdges().empty()) {
-        // If the graph has no edges, return the partition with all nodes in it
-        return std::vector<bool>(graph.num_of_nodes(), false);
-    }
+// std::vector<bool> fm(Graph& graph) {
+//     // Check if the graph has any edges
+//     if (graph.getEdges().empty()) {
+//         // If the graph has no edges, return the partition with all nodes in it
+//         return std::vector<bool>(graph.num_of_nodes(), false);
+//     }
 
-    std::map<int, Node> nodes = graph.getNodes();
+//     std::map<int, Node> nodes = graph.getNodes();
 
-    // Compute the total weight of the nodes and edges
-    int totalWeight = 0;
-    for (auto& node : nodes) {
-        totalWeight += node.second.weight;
-    }
-    // for (const Edge& edge : graph.getEdges()) {
-    //     totalWeight += edge.weight;
-    // }
+//     // Compute the total weight of the nodes and edges
+//     int totalWeight = 0;
+//     for (auto& node : nodes) {
+//         totalWeight += node.second.weight;
+//     }
+//     // for (const Edge& edge : graph.getEdges()) {
+//     //     totalWeight += edge.weight;
+//     // }
 
-    // Initialize partition A and B based on node weights
-    std::vector<bool> partitionA(graph.num_of_nodes(), false);
-    std::vector<bool> partitionB(graph.num_of_nodes(), true);
-    int currentWeight = 0;
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
-            partitionA[i] = true;
-            partitionB[i] = false;
-            currentWeight += graph.getNodeWeight(i);
-        }
-    }
-
-
-
-    // Initialize the best cut and the current cut
-    int bestCut = totalWeight;
-    int currentCut = bestCut;
-
-    // Initialize the random number generator
-    std::random_device rd;
-    std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
-
-    // Repeat the algorithm until no improvement is made
-    bool improved = true;
-    while (improved) {
-        improved = false;
-
-        // Shuffle the nodes
-        std::vector<int> nodeOrder(graph.num_of_nodes());
-        std::iota(nodeOrder.begin(), nodeOrder.end(), 0);
-        std::shuffle(nodeOrder.begin(), nodeOrder.end(), gen);
+//     // Initialize partition A and B based on node weights
+//     std::vector<bool> partitionA(graph.num_of_nodes(), false);
+//     std::vector<bool> partitionB(graph.num_of_nodes(), true);
+//     int currentWeight = 0;
+//     for (int i = 0; i < graph.num_of_nodes(); i++) {
+//         if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
+//             partitionA[i] = true;
+//             partitionB[i] = false;
+//             currentWeight += graph.getNodeWeight(i);
+//         }
+//     }
 
 
-        // Move nodes from partition B to partition A
-        for (int node : nodeOrder) {
-            if (partitionB[node]) {
-                partitionA[node] = true;
-                partitionB[node] = false;
 
-                // Update the cut
-                for (const Edge& edge : graph.getEdges()) {
-                    if (edge.n1 == node) {
-                        if (partitionA[edge.n2]) {
-                            currentCut += edge.weight;
-                        }
-                        else {
-                            currentCut -= edge.weight;
-                        }
-                    }
-                    else if (edge.n2 == node) {
-                        if (partitionA[edge.n1]) {
-                            currentCut += edge.weight;
-                        }
-                        else {
-                            currentCut -= edge.weight;
-                        }
-                    }
-                }
+//     // Initialize the best cut and the current cut
+//     int bestCut = totalWeight;
+//     int currentCut = bestCut;
 
-                // Check if the cut has improved
-                if (currentCut < bestCut) {
-                    bestCut = currentCut;
-                    improved = true;
-                }
-                else {
-                    partitionA[node] = false;
-                    partitionB[node] = true;
-                }
-            }
-        }
-    }
+//     // Initialize the random number generator
+//     std::random_device rd;
+//     std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
 
-    // Return the partition with the smaller cut
-    if (bestCut == totalWeight) {
-        // If the cut was not improved, return the original partition
-        return partitionA;
-    }
-    else if (currentCut == bestCut) {
-        // If the cut was improved, return the partition with the smaller cut
-        return partitionA;
-    }
-    else {
-        return partitionB;
-    }
-}
+//     // Repeat the algorithm until no improvement is made
+//     bool improved = true;
+//     while (improved) {
+//         improved = false;
+
+//         // Shuffle the nodes
+//         std::vector<int> nodeOrder(graph.num_of_nodes());
+//         std::iota(nodeOrder.begin(), nodeOrder.end(), 0);
+//         std::shuffle(nodeOrder.begin(), nodeOrder.end(), gen);
+
+
+//         // Move nodes from partition B to partition A
+//         for (int node : nodeOrder) {
+//             if (partitionB[node]) {
+//                 partitionA[node] = true;
+//                 partitionB[node] = false;
+
+//                 // Update the cut
+//                 for (const Edge& edge : graph.getEdges()) {
+//                     if (edge.n1 == node) {
+//                         if (partitionA[edge.n2]) {
+//                             currentCut += edge.weight;
+//                         }
+//                         else {
+//                             currentCut -= edge.weight;
+//                         }
+//                     }
+//                     else if (edge.n2 == node) {
+//                         if (partitionA[edge.n1]) {
+//                             currentCut += edge.weight;
+//                         }
+//                         else {
+//                             currentCut -= edge.weight;
+//                         }
+//                     }
+//                 }
+
+//                 // Check if the cut has improved
+//                 if (currentCut < bestCut) {
+//                     bestCut = currentCut;
+//                     improved = true;
+//                 }
+//                 else {
+//                     partitionA[node] = false;
+//                     partitionB[node] = true;
+//                 }
+//             }
+//         }
+//     }
+
+//     // Return the partition with the smaller cut
+//     if (bestCut == totalWeight) {
+//         // If the cut was not improved, return the original partition
+//         return partitionA;
+//     }
+//     else if (currentCut == bestCut) {
+//         // If the cut was improved, return the partition with the smaller cut
+//         return partitionA;
+//     }
+//     else {
+//         return partitionB;
+//     }
+// }
 
 
 std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vector<bool> partitionA = {}) {
@@ -280,6 +280,9 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
     int maxGainIdx = 0;
     int maxGain = 0;
 
+    int cumulativeWeightA = 0;
+    int cumulativeWeightB = 0;
+
     do {
         int maxGain = INT_MIN;
         int maxGainNode = -1;
@@ -296,13 +299,23 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             }
         }
 
-        std::cout << "bucket1: " << std::endl;
-        bucket1.print();
+        // std::cout << "bucket1: " << std::endl;
+        // bucket1.print();
 
-        std::cout << "bucket2: " << std::endl;
-        bucket2.print();
+        // std::cout << "bucket2: " << std::endl;
+        // bucket2.print();
 
-
+        // Update cumulative weights after the moves
+        cumulativeWeightA = 0;
+        cumulativeWeightB = 0;
+        for (int i = 0; i < graph.num_of_nodes(); ++i) {
+            if (partitionA[i]) {
+                cumulativeWeightA += graph.getNodeWeight(i);
+            }
+            else {
+                cumulativeWeightB += graph.getNodeWeight(i);
+            }
+        }
 
 
         int index = 0;
@@ -312,6 +325,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
         // while (std::find(lock.begin(), lock.end(), false) != lock.end()) {
         while (index < lock.size()) {
+            
             if (index % 2 == 0) {
                 bucket = bucket1;
             }
@@ -323,6 +337,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
             if (!bucket.isEmpty()) {
                 int max = bucket.extractMax();
+                
                 L.push_back(max);
                 lock[max] = true;
                 partitionA[max] = !partitionA[max];
@@ -354,6 +369,9 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                         }
                     }
                 }
+                        
+                        
+                
             }
 
             index++;
@@ -374,7 +392,17 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             // Apply changes to the partition based on the maxGainIdx
             for (int i = 0; i <= maxGainIdx; ++i) {
                 int v = L[i];
-                partitionA[v] = !partitionA[v];
+                if (
+                    (cumulativeWeightA - graph.getNodeWeight(v)  <=
+                        (cumulativeWeightB + graph.getNodeWeight(v))*1.1 )
+                    &&
+                    (cumulativeWeightA - graph.getNodeWeight(v) >=
+                        (cumulativeWeightB + graph.getNodeWeight(v)*0.9))
+
+                    ) {
+                        
+                        partitionA[v] = !partitionA[v];
+                    }
             }
         }
 
