@@ -170,18 +170,18 @@ int main() {
     // }
 
 
-    auto startTime = std::chrono::high_resolution_clock::now();
-    auto klPart = kernighanLin(G);
-    auto endTime = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = endTime - startTime;
-    // Print the execution time
-    std::cout << "Execution time KL: " << duration.count() << " seconds" << std::endl;
+    // auto startTime = std::chrono::high_resolution_clock::now();
+    // auto klPart = kernighanLin(G);
+    // auto endTime = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> duration = endTime - startTime;
+    // // Print the execution time
+    // std::cout << "Execution time KL: " << duration.count() << " seconds" << std::endl;
 
-    std::cout << "Final partition KL: " << std::endl;
-    for (int i = 0; i < G.num_of_nodes(); ++i) {
-          std::cout << klPart[i] << " ";
-      }
-    std::cout << std::endl;
+    // std::cout << "Final partition KL: " << std::endl;
+    // for (int i = 0; i < G.num_of_nodes(); ++i) {
+    //       std::cout << klPart[i] << " ";
+    //   }
+    // std::cout << std::endl;
 
     // auto multilevel = multilevel_KL(G);
     // std::cout << "Final multilevel partition KL: " << std::endl;
@@ -194,11 +194,11 @@ int main() {
 
 
     std::vector<bool> partitionA;
-    startTime = std::chrono::high_resolution_clock::now();
+    auto startTime = std::chrono::high_resolution_clock::now();
     auto fmPart = fiducciaMattheyses2(G, 10, partitionA);
 
-    endTime = std::chrono::high_resolution_clock::now();
-    duration = endTime - startTime;
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = endTime - startTime;
     
     // Print the execution time
     std::cout << "Execution time FM: " << duration.count() << " seconds" << std::endl;

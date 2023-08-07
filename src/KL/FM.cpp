@@ -14,7 +14,7 @@ extern int calculateTotalWeight(Graph& graph);
 
 // Function to compute the initial gain for each node in the graph
 void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
-    gains.resize(graph.num_of_nodes(), 0);
+    gains.assign(graph.num_of_nodes(), 0);
     for (int i = 0; i < graph.num_of_nodes(); i++) {
         for (int j = 0; j < graph.num_of_nodes(); j++) {
             if (partitionA[i] != partitionA[j]) {
@@ -275,6 +275,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                 partitionA[i] = true;
                 currentWeight += graph.getNodeWeight(i);
             }
+        
         }
     }
 
@@ -298,6 +299,8 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
     int cumulativeWeightA = 0;
     int cumulativeWeightB = 0;
+    bool hasImproved = true;
+    std::vector<bool> prevPartition = partitionA;
 
     do {
         int maxGain = INT_MIN;
@@ -325,7 +328,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
         cumulativeWeightA = 0;
         cumulativeWeightB = 0;
         for (int i = 0; i < graph.num_of_nodes(); ++i) {
-            if (partitionA[i]) {
+            if (!partitionA[i]) {
                 cumulativeWeightA += graph.getNodeWeight(i);
             }
             else {
@@ -336,10 +339,10 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
         int index = 0;
 
-        lock.resize(graph.num_of_nodes(), false);
-        L.clear();
-
-        // while (std::find(lock.begin(), lock.end(), false) != lock.end()) {
+        lock.assign(graph.num_of_nodes(), false);
+        L.resize(0);
+        
+        //while (std::find(lock.begin(), lock.end(), false) != lock.end()) {
         while (index < lock.size()) {
 
             if (index % 2 == 0) {
@@ -349,14 +352,16 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                 bucket = bucket2;
             }
 
-
-
             if (!bucket.isEmpty()) {
+
+                //problema che extract estrae il max da bucket ma b1 e b2 non vengono aggiornati potrebbe portare a problemi
                 int max = bucket.extractMax();
+
+                
 
                 L.push_back(max);
                 lock[max] = true;
-                partitionA[max] = !partitionA[max];
+                bestPartitionA[max] = !bestPartitionA[max];
 
                 // Update gains for neighboring nodes
                 for (const Edge& edge : graph.getEdges()) {
@@ -367,14 +372,15 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                         w = edge.n1;
                     else
                         continue;
-                    if (!lock[w]) {
+                    
                         // gains[w] = calculateNodeGain(graph, partitionA, w, partitionA[max]);
-                        if (!partitionA[max]) {
-                            gains[w] += graph.getMatAdj()[w][max][1];
+                        if (bestPartitionA[w] != bestPartitionA[max]) {
+                            gains[w] += 2*graph.getMatAdj()[w][max][1];
                         }
                         else {
-                            gains[w] -= graph.getMatAdj()[w][max][1];
+                            gains[w] -= 2*graph.getMatAdj()[w][max][1];
                         }
+                        
                         if (!partitionA[w]) {
                             bucket1.deleteElement(w);
                             bucket1.insert(w, gains[w]);
@@ -383,11 +389,16 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                             bucket2.deleteElement(w);
                             bucket2.insert(w, gains[w]);
                         }
-                    }
+                    
                 }
 
+            }
 
-
+            if (index % 2 == 0) {
+                bucket1 = bucket;
+            }
+            else {
+                bucket2 = bucket;
             }
 
             index++;
@@ -408,23 +419,46 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             // Apply changes to the partition based on the maxGainIdx
             for (int i = 0; i <= maxGainIdx; ++i) {
                 int v = L[i];
-                if (
+                if(!partitionA[v]){
+                    if (
                     (cumulativeWeightA - graph.getNodeWeight(v) <=
-                        (cumulativeWeightB + graph.getNodeWeight(v)) * 1.1)
+                        (cumulativeWeightB + graph.getNodeWeight(v)) * 1.2)
                     &&
                     (cumulativeWeightA - graph.getNodeWeight(v) >=
-                        (cumulativeWeightB + graph.getNodeWeight(v) * 0.9))
+                        (cumulativeWeightB + graph.getNodeWeight(v)) * 0.8)
 
                     ) {
 
                     partitionA[v] = !partitionA[v];
                 }
+                }
+                else{
+                    if (
+                    (cumulativeWeightB - graph.getNodeWeight(v) <=
+                        (cumulativeWeightA + graph.getNodeWeight(v)) * 1.2)
+                    &&
+                    (cumulativeWeightB - graph.getNodeWeight(v) >=
+                        (cumulativeWeightA + graph.getNodeWeight(v)) * 0.8)
+
+                    ) {
+
+                    partitionA[v] = !partitionA[v];
+                }
+
+                }
+                
+                
             }
         }
 
+        std::cout << "Max gain: " << maxGain << std::endl;
+
+        hasImproved = (prevPartition != partitionA);
+        prevPartition = partitionA;
+
 
         numIterations++;
-    } while (maxGain <= 0 && numIterations < maxIterations);
+    } while (maxGain <= 0 && hasImproved/*&& numIterations < maxIterations*/);
 
     std::cout << "Partition balance factor: " << calculateBalanceFactor(graph, partitionA) << std::endl;
     std::cout << "Cut size: " << calculateCutSize(graph, partitionA) << std::endl;

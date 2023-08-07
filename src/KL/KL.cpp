@@ -15,6 +15,8 @@ typedef struct {
     int gMax;
 } G_Max;
 
+void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains);
+
 int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA) {
     int cutSize = 0;
 
@@ -812,22 +814,22 @@ std::vector<bool> multilevel_KL(Graph& G) {
 }
 
 // Function to compute the initial gain for each node in the graph
-void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
-    gains.resize(graph.num_of_nodes(), 0);
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        for (int j = 0; j < graph.num_of_nodes(); j++) {
-            if (partitionA[i] != partitionA[j]) {
-                gains[i] += graph.getMatAdj()[i][j][1];
-            }
-            else {
-                gains[i] -= graph.getMatAdj()[i][j][1];
-            }
-        }
-        //gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
-    }
-}
+// void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
+//     gains.resize(graph.num_of_nodes(), 0);
+//     for (int i = 0; i < graph.num_of_nodes(); i++) {
+//         for (int j = 0; j < graph.num_of_nodes(); j++) {
+//             if (partitionA[i] != partitionA[j]) {
+//                 gains[i] += graph.getMatAdj()[i][j][1];
+//             }
+//             else {
+//                 gains[i] -= graph.getMatAdj()[i][j][1];
+//             }
+//         }
+//         //gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
+//     }
+// }
 
-std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) {
+std::vector<bool> KL(Graph& graph, std::vector<bool> partitionA = {}) {
 
     if (partitionA.empty()) {
         partitionA.resize(graph.num_of_nodes(), false); // Initial partition A

@@ -52,6 +52,13 @@ public:
     int getNodeWeight(int nodeIndex) const {
         return Nodes.at(nodeIndex).weight;
     }
+    double getNodeWeightAvg() const {
+        int sum = 0;
+        for(int i=0; i<sizeN; i++){
+            sum+= getNodeWeight(i);
+        }
+        return sum/sizeN;
+    }
 
     std::map<int, Node> getNodes() { return Nodes; }
     std::vector<Edge> getEdges() { return Edges; }
