@@ -105,6 +105,12 @@ public:
     bool isEmpty() const {
         return buckets.empty();
     }
+
+    void clear() {
+        buckets.clear();
+        minPriority = std::numeric_limits<int>::max();
+        maxPriority = std::numeric_limits<int>::min();
+    }
 };
 
 #endif
