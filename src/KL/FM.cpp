@@ -465,7 +465,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
         prevPartition = partitionA;
 
         numIterations++;
-    } while (maxGain >= 0 && hasImproved/*&& numIterations < maxIterations*/);
+    } while (maxGain <= 0 && hasImproved/*&& numIterations < maxIterations*/);
 
     std::cout << "Partition balance factor: " << calculateBalanceFactor(graph, partitionA) << std::endl;
     std::cout << "Cut size: " << calculateCutSize(graph, partitionA) << std::endl;
