@@ -851,7 +851,6 @@ std::vector<bool> KL(Graph& graph, std::vector<bool> partitionA = {}) {
     std::vector<bool> prevPartition = partitionA;
     // std::cout << "Initial partition size: " << prevPartition.size() << ", Graph size: " << graph.num_of_nodes() << ", Cut size: "<< calculateCutSize(graph, partitionA) <<std::endl;
 
-
     int cumulativeWeightA = 0;
     int cumulativeWeightB = 0;
     std::vector<std::pair<int, int>> L;
