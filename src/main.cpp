@@ -100,7 +100,7 @@ int main() {
     std::string file5 = "./data/3elt.graph";
     std::string file6 = "./data/simple.graph";
     std::string file7 = "./data/add20.graph";
-    read_input(file4, &G);
+    read_input(file3, &G);
     //read_input2(file6, &G);
 
     // G.printNodes();
@@ -199,7 +199,7 @@ int main() {
 
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = endTime - startTime;
-    
+
     // Print the execution time
     std::cout << "Execution time FM: " << duration.count() << " seconds" << std::endl;
 
