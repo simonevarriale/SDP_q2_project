@@ -30,6 +30,17 @@ void Graph::setEdge(int n1, int n2, int weight) {
     Edges.push_back(value);
 }
 
+void Graph::setAdjacencyMatrix() {
+    std::cout << "Setting adjacency matrix to " << sizeN << std::endl;
+    MatAdj.clear();
+    MatAdj.resize(sizeN, std::vector<std::vector<int>>(sizeN, std::vector<int>(2, 0)));
+}
+
+void Graph::setAdjacencyMatrixValue(int i, int j, int value, int weight) {
+    MatAdj[i][j][0] = value;
+    MatAdj[i][j][1] = weight;
+}
+
 void Graph::computeAdjacencyMatrix() {
     // Clear the existing adjacency matrix
     MatAdj.clear();

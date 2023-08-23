@@ -54,10 +54,10 @@ public:
     }
     double getNodeWeightAvg() const {
         int sum = 0;
-        for(int i=0; i<sizeN; i++){
-            sum+= getNodeWeight(i);
+        for (int i = 0; i < sizeN; i++) {
+            sum += getNodeWeight(i);
         }
-        return sum/sizeN;
+        return sum / sizeN;
     }
 
     std::map<int, Node> getNodes() { return Nodes; }
@@ -70,8 +70,13 @@ public:
     void setEdge(int n1, int n2, int weight);
 
     void computeAdjacencyMatrix();
+    void setAdjacencyMatrix();
+    void setAdjacencyMatrixValue(int i, int j, int value, int weight = 1);
+
+
     void computeMatrixDegree();
     void incrementDegree(int idNode);
+
     int returnLastID() { return Nodes.size(); }
     void setCoarse(int n1, int n2, int weight1, int weight2);
     int findNodeIdByCoarseIds(int n1, int n2);

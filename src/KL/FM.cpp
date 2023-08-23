@@ -313,9 +313,9 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
         // Initialize partition A and B based on node weights
         int totalWeight = calculateTotalWeight(graph);
         int currentWeight = 0;
-        for (int i = 0; i < graph.num_of_nodes()/2; i++) {
+        for (int i = 0; i < graph.num_of_nodes() / 2; i++) {
             /*if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
-                
+
                 currentWeight += graph.getNodeWeight(i);
             }*/
             partitionA[i] = true;
@@ -401,11 +401,11 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                 bestPartitionA[max] = !bestPartitionA[max];
                 //lock[max] = true;
 
-                if(isPartitionBalanced(graph, bestPartitionA)){
-                    
+                if (isPartitionBalanced(graph, bestPartitionA)) {
+
                     L.push_back(max);
                     lock[max] = true;
-                    
+
 
                     // tentative solution for removing max from original buckets
                     if (index % 2 == 0) {
@@ -423,44 +423,44 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
 
                     // Update gains for neighboring nodes
-                for (const Edge& edge : graph.getEdges()) {
-                    int w;
-                    if (edge.n1 == max)
-                        w = edge.n2;
-                    else if (edge.n2 == max)
-                        w = edge.n1;
-                    else
-                        continue;
+                    for (const Edge& edge : graph.getEdges()) {
+                        int w;
+                        if (edge.n1 == max)
+                            w = edge.n2;
+                        else if (edge.n2 == max)
+                            w = edge.n1;
+                        else
+                            continue;
 
-                    // gains[w] = calculateNodeGain(graph, partitionA, w, partitionA[max]);
-                    if (bestPartitionA[w] != bestPartitionA[max]) {
-                        gains[w] += 2 * graph.getMatAdj()[w][max][1];
-                    }
-                    else {
-                        gains[w] -= 2 * graph.getMatAdj()[w][max][1];
+                        // gains[w] = calculateNodeGain(graph, partitionA, w, partitionA[max]);
+                        if (bestPartitionA[w] != bestPartitionA[max]) {
+                            gains[w] += 2 * graph.getMatAdj()[w][max][1];
+                        }
+                        else {
+                            gains[w] -= 2 * graph.getMatAdj()[w][max][1];
+                        }
+
+                        if (!partitionA[w]) {
+                            bucket1.deleteElement(w);
+                            bucket1.insert(w, gains[w]);
+                        }
+                        else {
+                            bucket2.deleteElement(w);
+                            bucket2.insert(w, gains[w]);
+                        }
+
                     }
 
-                    if (!partitionA[w]) {
-                        bucket1.deleteElement(w);
-                        bucket1.insert(w, gains[w]);
-                    }
-                    else {
-                        bucket2.deleteElement(w);
-                        bucket2.insert(w, gains[w]);
-                    }
 
                 }
-
-
-                }
-                else{
+                else {
                     bestPartitionA[max] = !bestPartitionA[max];
                 }
 
-                
+
             }
 
-        
+
 
             index++;
         }
@@ -481,7 +481,7 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             // Apply changes to the partition based on the maxGainIdx
             for (int i = 0; i <= maxGainIdx; ++i) {
                 int v = L[i];
-                
+
                 /*if (!partitionA[v]) {
                     if (
                         (cumulativeWeightA - graph.getNodeWeight(v) <=
@@ -509,9 +509,9 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                     }
 
                 }*/
-            
+
                 partitionA[v] = !partitionA[v];
-                
+
             }
 
         }
