@@ -11,7 +11,7 @@
 #include <chrono>
 #include "./Graph/Graph.h"
 
-extern void RSB(Graph& G, int p);
+extern std::vector<bool> RSB(Graph& G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern Graph coarsening(Graph graph);
 extern std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
@@ -100,8 +100,8 @@ int main() {
     std::string file5 = "./data/3elt.graph";
     std::string file6 = "./data/simple.graph";
     std::string file7 = "./data/add20.graph";
-    read_input(file3, &G);
-    //read_input2(file6, &G);
+    read_input(file4, &G);
+    //read_input2(file7, &G);
 
     // G.printNodes();
 
@@ -190,15 +190,34 @@ int main() {
     // }
     // std::cout << std::endl;
 
-    //RSB(G, 2);
 
-
-    std::vector<bool> partitionA;
+    
     auto startTime = std::chrono::high_resolution_clock::now();
-    auto fmPart = fiducciaMattheyses2(G, 10, partitionA);
+    auto partition = RSB(G, 2);
 
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = endTime - startTime;
+
+    // Print the execution time
+    std::cout << "Execution time FM: " << duration.count() << " seconds" << std::endl;
+
+   
+
+    // Print the partitioning result
+    std::cout << "Partitioning result:\n";
+    for (auto v: partition) {
+        std::cout << v << " ";
+    }
+    std::cout << std::endl;
+
+
+
+    std::vector<bool> partitionA;
+    startTime = std::chrono::high_resolution_clock::now();
+    auto fmPart = fiducciaMattheyses2(G, 10, partitionA);
+
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
 
     // Print the execution time
     std::cout << "Execution time FM: " << duration.count() << " seconds" << std::endl;

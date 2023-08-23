@@ -263,6 +263,22 @@ double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA)
     return weightA / (weightA + weightB);
 }
 
+
+//balance factor of 1.0 is perfectly balanced, 0.0 or 2.0 is completely unbalanced
+double calculateBalanceF(Graph& graph, const std::vector<bool>& partitionA) {
+    double weightA = 0.0;
+    double weightB = 0.0;
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        if (partitionA[i]) {
+            weightA += graph.getNodeWeight(i);
+        }
+        else {
+            weightB += graph.getNodeWeight(i);
+        }
+    }
+    return std::min(weightA, weightB) / std::max(weightA, weightB);
+}
+
 bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA) {
     //it calculates balance factor and then checks whether the partition size is between 
     //r * |V| - s_max and r * |V| + s_max
@@ -297,11 +313,12 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
         // Initialize partition A and B based on node weights
         int totalWeight = calculateTotalWeight(graph);
         int currentWeight = 0;
-        for (int i = 0; i < graph.num_of_nodes(); i++) {
-            if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
-                partitionA[i] = true;
+        for (int i = 0; i < graph.num_of_nodes()/2; i++) {
+            /*if (currentWeight + graph.getNodeWeight(i) <= totalWeight / 2) {
+                
                 currentWeight += graph.getNodeWeight(i);
-            }
+            }*/
+            partitionA[i] = true;
 
         }
     }
@@ -380,25 +397,32 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             if (!bucket.isEmpty()) {
                 //problema che extract estrae il max da bucket ma b1 e b2 non vengono aggiornati potrebbe portare a problemi
                 int max = bucket.extractMax();
-                // tentative solution for removing max from original buckets
-                if (index % 2 == 0) {
-                    bucket1.deleteElement(max);
-                    // std::cout << "bucket1: " << std::endl;
-                    // bucket1.print();
-                    // std::cout << std::endl;
-                }
-                else {
-                    bucket2.deleteElement(max);
-                    // std::cout << "bucket2: " << std::endl;
-                    // bucket2.print();
-                    // std::cout << std::endl;
-                }
 
-                L.push_back(max);
-                lock[max] = true;
                 bestPartitionA[max] = !bestPartitionA[max];
+                //lock[max] = true;
 
-                // Update gains for neighboring nodes
+                if(isPartitionBalanced(graph, bestPartitionA)){
+                    
+                    L.push_back(max);
+                    lock[max] = true;
+                    
+
+                    // tentative solution for removing max from original buckets
+                    if (index % 2 == 0) {
+                        bucket1.deleteElement(max);
+                        // std::cout << "bucket1: " << std::endl;
+                        // bucket1.print();
+                        // std::cout << std::endl;
+                    }
+                    else {
+                        bucket2.deleteElement(max);
+                        // std::cout << "bucket2: " << std::endl;
+                        // bucket2.print();
+                        // std::cout << std::endl;
+                    }
+
+
+                    // Update gains for neighboring nodes
                 for (const Edge& edge : graph.getEdges()) {
                     int w;
                     if (edge.n1 == max)
@@ -427,14 +451,16 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
 
                 }
 
+
+                }
+                else{
+                    bestPartitionA[max] = !bestPartitionA[max];
+                }
+
+                
             }
 
-            if (index % 2 == 0) {
-                bucket1 = bucket;
-            }
-            else {
-                bucket2 = bucket;
-            }
+        
 
             index++;
         }
@@ -455,7 +481,8 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
             // Apply changes to the partition based on the maxGainIdx
             for (int i = 0; i <= maxGainIdx; ++i) {
                 int v = L[i];
-                if (!partitionA[v]) {
+                
+                /*if (!partitionA[v]) {
                     if (
                         (cumulativeWeightA - graph.getNodeWeight(v) <=
                             (cumulativeWeightB + graph.getNodeWeight(v)) * 1.2)
@@ -481,8 +508,10 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
                         partitionA[v] = !partitionA[v];
                     }
 
-                }
-
+                }*/
+            
+                partitionA[v] = !partitionA[v];
+                
             }
 
         }
@@ -493,10 +522,10 @@ std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vect
         prevPartition = partitionA;
 
         numIterations++;
-    } while (maxGain <= 0 && hasImproved/*&& numIterations < maxIterations*/);
+    } while (maxGain <= 0 /*&& hasImproved && numIterations < maxIterations*/);
 
-    std::cout << "Partition balance factor: " << calculateBalanceFactor(graph, partitionA) << std::endl;
-    // std::cout << "Is Partition balanced? " << isPartitionBalanced(graph, partitionA) << std::endl;
+    std::cout << "Partition balance factor: " << calculateBalanceF(graph, partitionA) << std::endl;
+    //std::cout << "Is Partition balanced? " << isPartitionBalanced(graph, partitionA) << std::endl;
     std::cout << "Cut size: " << calculateCutSize(graph, partitionA) << std::endl;
 
     return partitionA;
