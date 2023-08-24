@@ -22,6 +22,25 @@ void Graph::setNode(int n, int weight, Coarse* coarse) {
     Nodes.insert({ n, value });
 }
 
+void Graph::removeNode(int nodeId) {
+    // Remove the node from the Nodes map
+    Nodes.erase(nodeId);
+
+    // Remove all edges connected to the node
+    Edges.erase(std::remove_if(Edges.begin(), Edges.end(), [nodeId](const Edge& edge) {
+        return edge.n1 == nodeId || edge.n2 == nodeId;
+        }), Edges.end());
+
+    // Remove the node from the adjacency list of all other nodes
+    for (auto& nodePair : Nodes) {
+        int id = nodePair.first;
+        std::vector<std::vector<std::vector<int>>>& adjList = nodePair.second.coarse->adj;
+        adjList.erase(std::remove_if(adjList.begin(), adjList.end(), [nodeId](const std::vector<std::vector<int>>& edge) {
+            return edge[0][0] == nodeId || edge[1][0] == nodeId;
+            }), adjList.end());
+    }
+}
+
 void Graph::setEdge(int n1, int n2, int weight) {
     Edge value;
     value.n1 = n1;

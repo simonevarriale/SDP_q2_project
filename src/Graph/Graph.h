@@ -45,6 +45,16 @@ private:
 
 public:
     Graph(int numNodes = 0, int numEdges = 0) : sizeN(numNodes), sizeE(numEdges) {}
+    // ~Graph() {
+    //     // Free memory allocated for coarse nodes
+    //     for (auto& node : Nodes) {
+    //         if (node.second.coarse != nullptr) {
+    //             delete node.second.coarse;
+    //             node.second.coarse = nullptr;
+    //         }
+    //     }
+    // }
+    void removeNode(int nodeId);
     int num_of_nodes() { return sizeN; }
     int num_of_edges() { return sizeE; }
     void setSizeNodes(int value) { sizeN = value; }
