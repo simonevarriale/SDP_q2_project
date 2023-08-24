@@ -21,6 +21,7 @@ extern std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, st
 extern std::vector<bool> fm(Graph& graph);
 extern double calculateBalanceF(Graph& graph, const std::vector<bool>& partitionA);
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
+extern std::vector<bool> MLRSB(Graph& G, int p);
 
 void read_input(const std::string& filename, Graph* G) {
 
@@ -209,7 +210,7 @@ int main() {
 
     /////////////////////////////////////////////////////GRAPH READ//////////////////////////////////////////////
     // startTime = std::chrono::high_resolution_clock::now();
-    // read_input(file4, &G);
+    //read_input(file2, &G);
     read_input2(file7, &G);
     // read_input3(file7, &G);
     std::cout << "Graph Read" << std::endl;
@@ -219,16 +220,27 @@ int main() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////RSB////////////////////////////////////////////////////
-    // startTime = std::chrono::high_resolution_clock::now();
-    // auto partition = RSB(G, 2);
-    // endTime = std::chrono::high_resolution_clock::now();
-    // duration = endTime - startTime;
-    // std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
-    // std::cout << "Partitioning result:" << std::endl;
-    // for (auto v : partition) {
-    //     std::cout << v << " ";
-    // }
-    // std::cout << std::endl;
+    //  startTime = std::chrono::high_resolution_clock::now();
+    //  auto partition = RSB(G, 2);
+    //  endTime = std::chrono::high_resolution_clock::now();
+    //  duration = endTime - startTime;
+    //  std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
+    //  std::cout << "Partitioning result:" << std::endl;
+    //  for (auto v : partition) {
+    //      std::cout << v << " ";
+    //  }
+    //  std::cout << std::endl;
+
+     startTime = std::chrono::high_resolution_clock::now();
+     auto partition1 = MLRSB(G, 2);
+     endTime = std::chrono::high_resolution_clock::now();
+     duration = endTime - startTime;
+     std::cout << "Execution time MLRSB: " << duration.count() << " seconds" << std::endl;
+     std::cout << "Partitioning result:" << std::endl;
+     for (auto v : partition1) {
+         std::cout << v << " ";
+     }
+     std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////KL/////////////////////////////////////////////////////

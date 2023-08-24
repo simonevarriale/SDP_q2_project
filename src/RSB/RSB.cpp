@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <Eigen/LU>
+#include <cmath>
 
 // Function to calculate the cut size between two sets A and B
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
@@ -98,73 +99,6 @@ std::vector<bool> RSB(Graph& G, int p) {
 
 extern Graph coarsening(Graph G);
 
-Eigen::VectorXd fiedler(Graph G){
-
-    int sizeNodes = G.num_of_nodes();
-    Eigen::MatrixXd L(sizeNodes, sizeNodes);
-    Eigen::VectorXd fv;
-    Eigen::VectorXd fv1;
-
-    G.computeMatrixDegree();
-    auto matDeg = G.getMatDegree();
-    auto matAdj = G.getMatAdj();
-
-    // compute Laplacian matrix
-    //std::cout << "Laplacian matrix:" << std::endl;
-    for (int i = 0; i < sizeNodes; i++) {
-        for (int j = 0; j < sizeNodes; j++) {
-            L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
-            //std::cout << L(i, j) << " ";
-        }
-        //std::cout << std::endl;
-    }
-   
-    int sizeNodes = G.num_of_nodes();
-    Eigen::MatrixXd L(sizeNodes, sizeNodes);
-
-    G.computeMatrixDegree();
-    auto matDeg = G.getMatDegree();
-    auto matAdj = G.getMatAdj();
-
-    // compute Laplacian matrix
-    //std::cout << "Laplacian matrix:" << std::endl;
-    for (int i = 0; i < sizeNodes; i++) {
-        for (int j = 0; j < sizeNodes; j++) {
-            L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
-            //std::cout << L(i, j) << " ";
-        }
-        //std::cout << std::endl;
-    }
-
-    if(sizeNodes > 10){ //grandezza grafo maggiore di un certo numero di nodi
-        Graph G1 = coarsening(G);
-        fv1 =  fiedler(G1);
-        fv = interpolate(fv1, L, sizeNodes);
-        fv = rqi(fv, L, sizeNodes);
-        
-
-    }
-    else{
-        
-        Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
-
-    // Eigen::VectorXd eigenvalues = solver.eigenvalues().real();
-
-    if (eigenSolver.info() == Eigen::Success) {
-        Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); // ascending order
-        //std::cout << "Eigenvectors:\n" << eigenvectors << std::endl;
-        // Eigen::MatrixXd sortedEigenvectors = eigenvectors.rowwise().reverse(); //descending order
-        // std::cout << "Sorted eigenvectors:\n" << sortedEigenvectors << std::endl;
-        //std::cout << eigenvectors.col(1) << std::endl;
-        // Find the Fiedler vector (second smallest eigenvector)
-            fv = eigenvectors.col(1);
-        }
-
-    }
-
-    return fv1;
-}
-
 Eigen::VectorXd interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNodes){
     Eigen::VectorXd fv(sizeNodes);
 
@@ -197,20 +131,109 @@ Eigen::VectorXd interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNode
 
 Eigen::VectorXd rqi(Eigen::VectorXd fv, Eigen::MatrixXd L, int sizeNodes){
 
-    auto theta = fv.transpose() * L * fv;
+    float theta = fv.transpose() * L * fv;
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(sizeNodes, sizeNodes);
+    double p;
 
-    /*do{
-        auto x = fv/(L-theta*I);
+    do{
+        Eigen::VectorXd x = (L-theta*I).lu().solve(fv);
+        fv = x/x.norm();
+        theta = fv.transpose() * L * fv;
+        p = ((L*fv).transpose() * (L*fv) - theta*theta);
+        p = sqrt(p);
 
-    }while(p<eps);*/
+    }while(p<0.1);
 
+    return fv;
 
 }
 
+
+
+Eigen::VectorXd fiedler(Graph G){
+
+    int sizeNodes = G.num_of_nodes();
+    Eigen::MatrixXd L(sizeNodes, sizeNodes);
+    Eigen::VectorXd fv;
+    Eigen::VectorXd fv1;
+
+    G.computeMatrixDegree();
+    auto matDeg = G.getMatDegree();
+    auto matAdj = G.getMatAdj();
+
+    // compute Laplacian matrix
+    //std::cout << "Laplacian matrix:" << std::endl;
+    for (int i = 0; i < sizeNodes; i++) {
+        for (int j = 0; j < sizeNodes; j++) {
+            L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
+            //std::cout << L(i, j) << " ";
+        }
+        //std::cout << std::endl;
+    }
+   
+
+    if(sizeNodes > 10){ //grandezza grafo maggiore di un certo numero di nodi
+        Graph G1 = coarsening(G);
+        fv1 =  fiedler(G1);
+        fv = interpolate(fv1, L, sizeNodes);
+        fv = rqi(fv, L, sizeNodes);
+        
+    }
+    else{
+        
+    Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
+
+    // Eigen::VectorXd eigenvalues = solver.eigenvalues().real();
+
+    if (eigenSolver.info() == Eigen::Success) {
+        Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); // ascending order
+        //std::cout << "Eigenvectors:\n" << eigenvectors << std::endl;
+        // Eigen::MatrixXd sortedEigenvectors = eigenvectors.rowwise().reverse(); //descending order
+        // std::cout << "Sorted eigenvectors:\n" << sortedEigenvectors << std::endl;
+        //std::cout << eigenvectors.col(1) << std::endl;
+        // Find the Fiedler vector (second smallest eigenvector)
+            fv = eigenvectors.col(1);
+        }
+
+    }
+
+    return fv;
+}
+
+
 std::vector<bool> MLRSB(Graph& G, int p){
 
-    
+    Eigen::VectorXd fiedlerV;
+
+    fiedlerV = fiedler(G);
+
+    double medianValue = computeMedian(fiedlerV);
+        std::vector<bool> partition(G.num_of_nodes());
+        for (int i = 0; i < G.num_of_nodes(); ++i) {
+            if (fiedlerV(i) <= medianValue) {
+                partition[i] = 0; // Assign node i to partition 0
+            }
+            else {
+                partition[i] = 1; // Assign node i to partition 1
+            }
+        }
+
+        double weightA = 0.0;
+        double weightB = 0.0;
+    for (int i = 0; i < G.num_of_nodes(); i++) {
+        if (partition[i]) {
+            weightA += G.getNodeWeight(i);
+        }
+        else {
+            weightB += G.getNodeWeight(i);
+        }
+    }
+
+     std::cout<<"Partition Balance Factor: " <<std::min(weightA, weightB) / std::max(weightA, weightB)<<std::endl;
+     std::cout<<"Cut size RSB: " << calculateCutSize(G,partition) <<std::endl;
+
+
+        return partition;
 
 
 }
