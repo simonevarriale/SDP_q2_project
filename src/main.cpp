@@ -313,16 +313,16 @@ int main() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////PARALLEL RSB////////////////////////////////////////////////
-    startTime = std::chrono::high_resolution_clock::now();
-    auto partitionParallelRSB = Parallel_RSB(G, 2);
-    endTime = std::chrono::high_resolution_clock::now();
-    duration = endTime - startTime;
-    std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
-    std::cout << "Partitioning result:" << std::endl;
-    for (auto v : partitionParallelRSB) {
-        std::cout << v << " ";
-    }
-    std::cout << std::endl;
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto partitionParallelRSB = Parallel_RSB(G, 2);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // for (auto v : partitionParallelRSB) {
+    //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////MLRSB////////////////////////////////////////////////////
