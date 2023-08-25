@@ -26,6 +26,8 @@ extern std::vector<bool> fm(Graph& graph);
 extern double calculateBalanceF(Graph& graph, const std::vector<bool>& partitionA);
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 extern std::vector<bool> MLRSB(Graph& G, int p);
+extern std::vector<bool> Parallel_MLRSB(Graph& G, int p);
+extern std::vector<bool> Parallel_RSB(Graph& G, int p);
 
 std::mutex mtx;
 
@@ -128,7 +130,7 @@ void read_input3(const std::string& filename, Graph* G) {
     inputFile.close();
 }
 void read_input_parallel(const std::string& filename, Graph* G) {
-    
+
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
         std::cout << "Failed to open the file: " << filename << std::endl;
@@ -142,58 +144,46 @@ void read_input_parallel(const std::string& filename, Graph* G) {
     G->setSizeEdges(numEdges);
 
     std::vector<std::thread> threads;
-    const int numThreads = /*std::thread::hardware_concurrency()*/ 1;
+    const int numThreads = /*std::thread::hardware_concurrency()*/ 2;
     const int chunkSize = numNodes / numThreads;
 
-
     std::mutex mtx;
-    
 
     for (int t = 0; t < numThreads; t++) {
         const int start = t * chunkSize;
         const int end = (t == numThreads - 1) ? numNodes : (t + 1) * chunkSize - 1;
 
-        
-        
         threads.emplace_back([&, start, end]() {
             // std::ifstream threadInputFile(filename);
             // if (!threadInputFile.is_open()) {
             //     std::cout << "Failed to open the file: " << filename << std::endl;
             //     return;
             // }
-
-           
-
             for (int i = start; i <= end; i++) {
-                
                 mtx.lock();
                 G->setNode(i, 1);
                 mtx.unlock();
-                
+
                 std::string line;
                 std::getline(inputFile, line);
                 std::istringstream iss(line);
-                
+
                 int adjacentNodeId;
 
                 mtx.lock();
                 while (iss >> adjacentNodeId) {
-                    
                     G->setEdge(i, adjacentNodeId - 1, 1);
-                    
                 }
                 mtx.unlock();
             }
-            
             //threadInputFile.close();
-            
-        });
+            });
     }
 
-    
+
     for (auto& thread : threads) {
         thread.join();
-        
+
     }
 
     //G->computeAdjacencyMatrix();
@@ -286,26 +276,27 @@ int main() {
 
     /////////////////////////////////////////////////////SEQUENTIAL GRAPH READ//////////////////////////////////////////////
     startTime = std::chrono::high_resolution_clock::now();
-    // // read_input(file4, &G);
-    read_input2(file5, &G);
-    // // read_input3(file7, &G);
+    // read_input(file4, &G);
+    read_input2(file7, &G);
+    // read_input3(file7, &G)
+    G.computeAdjacencyMatrix();;
     // // std::cout << "Graph Read" << std::endl;
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time sequential graph reading: " << duration.count() << " seconds" << std::endl;
-    std::cout <<"Num of nodes: "<<G.num_of_nodes()<<" and Num of Edges: "<<G.num_of_edges()<<std::endl;
+    std::cout << "Num of nodes: " << G.num_of_nodes() << " and Num of Edges: " << G.num_of_edges() << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////PARALLEL GRAPH READ//////////////////////////////////////////////
-    startTime = std::chrono::high_resolution_clock::now();
-    // read_input(file4, &G);
-    read_input_parallel(file5, &G1);
-    // read_input3(file7, &G);
-    // std::cout << "Graph Read" << std::endl;
-    endTime = std::chrono::high_resolution_clock::now();
-    duration = endTime - startTime;
-    std::cout << "Execution time parallel graph reading: " << duration.count() << " seconds" << std::endl;
-    std::cout <<"Num of nodes: "<<G1.num_of_nodes()<<" and Num of Edges: "<<G1.num_of_edges()<<std::endl;
+    // startTime = std::chrono::high_resolution_clock::now();
+    // // read_input(file4, &G);
+    // read_input_parallel(file5, &G1);
+    // // read_input3(file7, &G);
+    // // std::cout << "Graph Read" << std::endl;
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time parallel graph reading: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Num of nodes: " << G1.num_of_nodes() << " and Num of Edges: " << G1.num_of_edges() << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////RSB////////////////////////////////////////////////////
@@ -321,17 +312,43 @@ int main() {
     //  std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////PARALLEL RSB////////////////////////////////////////////////
+    startTime = std::chrono::high_resolution_clock::now();
+    auto partitionParallelRSB = Parallel_RSB(G, 2);
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
+    std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
+    std::cout << "Partitioning result:" << std::endl;
+    for (auto v : partitionParallelRSB) {
+        std::cout << v << " ";
+    }
+    std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /////////////////////////////////////////////////////MLRSB////////////////////////////////////////////////////
-    // startTime = std::chrono::high_resolution_clock::now();
-    // auto partition1 = MLRSB(G, 2);
-    // endTime = std::chrono::high_resolution_clock::now();
-    // duration = endTime - startTime;
-    // std::cout << "Execution time MLRSB: " << duration.count() << " seconds" << std::endl;
-    // std::cout << "Partitioning result:" << std::endl;
-    // for (auto v : partition1) {
-    //     std::cout << v << " ";
-    // }
-    // std::cout << std::endl;
+    startTime = std::chrono::high_resolution_clock::now();
+    auto MLRSBpartition = MLRSB(G, 2);
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
+    std::cout << "Execution time MLRSB: " << duration.count() << " seconds" << std::endl;
+    std::cout << "Partitioning result:" << std::endl;
+    for (auto v : MLRSBpartition) {
+        std::cout << v << " ";
+    }
+    std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////PARALLEL MLRSB/////////////////////////////////////////////
+    startTime = std::chrono::high_resolution_clock::now();
+    auto parallelMRSBpartition = Parallel_MLRSB(G, 2);
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
+    std::cout << "Execution time Parallel MLRSB: " << duration.count() << " seconds" << std::endl;
+    std::cout << "Partitioning result:" << std::endl;
+    for (auto v : parallelMRSBpartition) {
+        std::cout << v << " ";
+    }
+    std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////KL/////////////////////////////////////////////////////
