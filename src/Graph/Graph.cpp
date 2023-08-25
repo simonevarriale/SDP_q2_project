@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include <iostream>
+#include <algorithm>
 
 void Graph::setNode(int n, int weight) {
     Node value;

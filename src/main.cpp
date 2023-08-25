@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <future>
+#include <barrier>
 #include "./Graph/Graph.h"
 
 extern std::vector<bool> RSB(Graph& G, int p);
@@ -93,7 +94,7 @@ void read_input2(const std::string& filename, Graph* G) {
         }
     }
 
-    G->computeAdjacencyMatrix();
+    //G->computeAdjacencyMatrix();
 
     inputFile.close();
 }
@@ -127,6 +128,7 @@ void read_input3(const std::string& filename, Graph* G) {
     inputFile.close();
 }
 void read_input_parallel(const std::string& filename, Graph* G) {
+    
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
         std::cout << "Failed to open the file: " << filename << std::endl;
@@ -140,39 +142,62 @@ void read_input_parallel(const std::string& filename, Graph* G) {
     G->setSizeEdges(numEdges);
 
     std::vector<std::thread> threads;
-    const int numThreads = std::thread::hardware_concurrency();
+    const int numThreads = /*std::thread::hardware_concurrency()*/ 1;
     const int chunkSize = numNodes / numThreads;
 
-    std::mutex inputFileMutex;
+
+    std::mutex mtx;
+    
 
     for (int t = 0; t < numThreads; t++) {
         const int start = t * chunkSize;
-        const int end = (t == numThreads - 1) ? numNodes : (t + 1) * chunkSize;
+        const int end = (t == numThreads - 1) ? numNodes : (t + 1) * chunkSize - 1;
+
+        
+        
         threads.emplace_back([&, start, end]() {
-            std::ifstream threadInputFile(filename);
-            if (!threadInputFile.is_open()) {
-                std::cout << "Failed to open the file: " << filename << std::endl;
-                return;
-            }
-            for (int i = start; i < end; i++) {
+            // std::ifstream threadInputFile(filename);
+            // if (!threadInputFile.is_open()) {
+            //     std::cout << "Failed to open the file: " << filename << std::endl;
+            //     return;
+            // }
+
+           
+
+            for (int i = start; i <= end; i++) {
+                
+                mtx.lock();
                 G->setNode(i, 1);
+                mtx.unlock();
+                
                 std::string line;
-                std::getline(threadInputFile, line);
+                std::getline(inputFile, line);
                 std::istringstream iss(line);
+                
                 int adjacentNodeId;
+
+                mtx.lock();
                 while (iss >> adjacentNodeId) {
+                    
                     G->setEdge(i, adjacentNodeId - 1, 1);
+                    
                 }
+                mtx.unlock();
             }
-            threadInputFile.close();
-            });
+            
+            //threadInputFile.close();
+            
+        });
     }
 
+    
     for (auto& thread : threads) {
         thread.join();
+        
     }
 
-    G->computeAdjacencyMatrix();
+    //G->computeAdjacencyMatrix();
+    inputFile.close();
 }
 std::vector<bool> readPartition(const std::string& filename, int numNodes) {
     std::ifstream inputFile(filename);
@@ -236,6 +261,7 @@ int main() {
     std::chrono::duration<double> duration = endTime - startTime;
 
     Graph G;
+    Graph G1;
     std::string file1 = "./data/simple_graph.txt";
     std::string file2 = "./data/test_graph.txt";
     std::string file3 = "./data/connected_graph.txt";
@@ -259,25 +285,27 @@ int main() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////SEQUENTIAL GRAPH READ//////////////////////////////////////////////
-    // startTime = std::chrono::high_resolution_clock::now();
+    startTime = std::chrono::high_resolution_clock::now();
     // // read_input(file4, &G);
-    // read_input2(file7, &G);
+    read_input2(file5, &G);
     // // read_input3(file7, &G);
     // // std::cout << "Graph Read" << std::endl;
-    // endTime = std::chrono::high_resolution_clock::now();
-    // duration = endTime - startTime;
-    // std::cout << "Execution time sequential graph reading: " << duration.count() << " seconds" << std::endl;
+    endTime = std::chrono::high_resolution_clock::now();
+    duration = endTime - startTime;
+    std::cout << "Execution time sequential graph reading: " << duration.count() << " seconds" << std::endl;
+    std::cout <<"Num of nodes: "<<G.num_of_nodes()<<" and Num of Edges: "<<G.num_of_edges()<<std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////PARALLEL GRAPH READ//////////////////////////////////////////////
     startTime = std::chrono::high_resolution_clock::now();
     // read_input(file4, &G);
-    read_input_parallel(file7, &G);
+    read_input_parallel(file5, &G1);
     // read_input3(file7, &G);
     // std::cout << "Graph Read" << std::endl;
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time parallel graph reading: " << duration.count() << " seconds" << std::endl;
+    std::cout <<"Num of nodes: "<<G1.num_of_nodes()<<" and Num of Edges: "<<G1.num_of_edges()<<std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////RSB////////////////////////////////////////////////////
