@@ -29,8 +29,6 @@ extern std::vector<bool> MLRSB(Graph& G, int p);
 extern std::vector<bool> Parallel_MLRSB(Graph& G, int p);
 extern std::vector<bool> Parallel_RSB(Graph& G, int p);
 
-std::mutex mtx;
-
 void read_input(const std::string& filename, Graph* G) {
 
     std::ifstream inputFile(filename);
@@ -96,39 +94,9 @@ void read_input2(const std::string& filename, Graph* G) {
         }
     }
 
-    //G->computeAdjacencyMatrix();
-
     inputFile.close();
 }
 
-void read_input3(const std::string& filename, Graph* G) {
-    std::ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        std::cout << "Failed to open the file: " << filename << std::endl;
-        return;
-    }
-
-    int numNodes, numEdges;
-    inputFile >> numNodes >> numEdges;
-
-    G->setSizeNodes(numNodes);
-    G->setSizeEdges(numEdges);
-
-    for (int i = 0; i < numNodes; i++) {
-        G->setNode(i, 1);
-        std::string line;
-        std::getline(inputFile, line);
-        std::istringstream iss(line);
-        int adjacentNodeId;
-        while (iss >> adjacentNodeId) {
-            G->setEdge(i, adjacentNodeId - 1, 1);
-        }
-    }
-
-    G->computeAdjacencyMatrix();
-
-    inputFile.close();
-}
 void read_input_parallel(const std::string& filename, Graph* G) {
 
     std::ifstream inputFile(filename);
@@ -187,8 +155,51 @@ void read_input_parallel(const std::string& filename, Graph* G) {
     }
 
     //G->computeAdjacencyMatrix();
+    // G->setAdjacencyMatrix();
     inputFile.close();
 }
+
+// void read_input_parallel(const std::string& filename, Graph* G) {
+//     std::ifstream inputFile(filename);
+//     if (!inputFile.is_open()) {
+//         std::cout << "Failed to open the file: " << filename << std::endl;
+//         return;
+//     }
+
+//     int numNodes, numEdges;
+//     inputFile >> numNodes >> numEdges;
+
+//     G->setSizeNodes(numNodes);
+//     G->setSizeEdges(numEdges);
+
+//     std::vector<std::thread> threads;
+//     std::vector<std::mutex> mutexes(numNodes);
+
+//     for (int t = 0; t < 2; t++) {
+//         threads.emplace_back([&, t]() {
+//             for (int i = t; i < numNodes; i += 2) {
+//                 mutexes[i].lock();
+//                 G->setNode(i, 1);
+//                 std::string line;
+//                 std::getline(inputFile, line);
+//                 std::istringstream iss(line);
+//                 int adjacentNodeId;
+//                 while (iss >> adjacentNodeId) {
+//                     G->setEdge(i, adjacentNodeId - 1, 1);
+//                     // G->setEdge(adjacentNodeId - 1, i, 1); // add this line to fix the issue
+//                 }
+//                 mutexes[i].unlock();
+//             }
+//             });
+//     }
+
+//     for (auto& thread : threads) {
+//         thread.join();
+//     }
+
+//     inputFile.close();
+// }
+
 std::vector<bool> readPartition(const std::string& filename, int numNodes) {
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
@@ -279,8 +290,7 @@ int main() {
     // read_input(file4, &G);
     read_input2(file7, &G);
     // read_input3(file7, &G)
-    G.computeAdjacencyMatrix();;
-    // // std::cout << "Graph Read" << std::endl;
+    G.computeAdjacencyMatrix();
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time sequential graph reading: " << duration.count() << " seconds" << std::endl;
@@ -290,26 +300,31 @@ int main() {
     /////////////////////////////////////////////////////PARALLEL GRAPH READ//////////////////////////////////////////////
     // startTime = std::chrono::high_resolution_clock::now();
     // // read_input(file4, &G);
-    // read_input_parallel(file5, &G1);
+    // read_input_parallel(file7, &G1);
     // // read_input3(file7, &G);
-    // // std::cout << "Graph Read" << std::endl;
+    // // std::cout << "///////////" << "Graphs G" << "///////////" << std::endl;
+    // // G.printGraph();
+    // // std::cout << "//////////////////////" << std::endl;
+    // // std::cout << "///////////" << "Graphs G1" << "///////////" << std::endl;
+    // // G1.printGraph();
     // endTime = std::chrono::high_resolution_clock::now();
     // duration = endTime - startTime;
     // std::cout << "Execution time parallel graph reading: " << duration.count() << " seconds" << std::endl;
     // std::cout << "Num of nodes: " << G1.num_of_nodes() << " and Num of Edges: " << G1.num_of_edges() << std::endl;
+    // G1.computeAdjacencyMatrix();
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////RSB////////////////////////////////////////////////////
-    //  startTime = std::chrono::high_resolution_clock::now();
-    //  auto partition = RSB(G, 2);
-    //  endTime = std::chrono::high_resolution_clock::now();
-    //  duration = endTime - startTime;
-    //  std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
-    //  std::cout << "Partitioning result:" << std::endl;
-    //  for (auto v : partition) {
-    //      std::cout << v << " ";
-    //  }
-    //  std::cout << std::endl;
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto partition = RSB(G, 2);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time RSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // for (auto v : partition) {
+    //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////PARALLEL RSB////////////////////////////////////////////////
@@ -331,11 +346,11 @@ int main() {
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time MLRSB: " << duration.count() << " seconds" << std::endl;
-    std::cout << "Partitioning result:" << std::endl;
-    for (auto v : MLRSBpartition) {
-        std::cout << v << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // for (auto v : MLRSBpartition) {
+    //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////PARALLEL MLRSB/////////////////////////////////////////////
@@ -344,11 +359,11 @@ int main() {
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time Parallel MLRSB: " << duration.count() << " seconds" << std::endl;
-    std::cout << "Partitioning result:" << std::endl;
-    for (auto v : parallelMRSBpartition) {
-        std::cout << v << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // for (auto v : parallelMRSBpartition) {
+    //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////KL/////////////////////////////////////////////////////

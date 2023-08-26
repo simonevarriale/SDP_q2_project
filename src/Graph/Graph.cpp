@@ -70,6 +70,7 @@ void Graph::computeAdjacencyMatrix() {
 
     // Iterate over the edges and update the adjacency matrix
     for (const Edge& edge : Edges) {
+        // std::cout << "Edge: " << edge.n1 << " " << edge.n2 << " " << edge.weight << std::endl;
         int n1 = edge.n1;
         int n2 = edge.n2;
         int weight = edge.weight;

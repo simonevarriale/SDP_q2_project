@@ -10,6 +10,7 @@
 // Function to calculate the cut size between two sets A and B
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 extern Graph coarsening(Graph& G);
+bool hasImproved = true;
 
 double computeMedian(const Eigen::VectorXd& vector) {
     Eigen::VectorXd sortedVector = vector;
@@ -82,7 +83,7 @@ std::vector<bool> RSB(Graph& G, int p) {
             }
         }
 
-        std::cout << "Partition Balance Factor: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
+        std::cout << "Partition Balance Factor RSB: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
         std::cout << "Cut size RSB: " << calculateCutSize(G, partition) << std::endl;
 
 
@@ -98,7 +99,7 @@ std::vector<bool> RSB(Graph& G, int p) {
 }
 
 Eigen::VectorXd interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNodes) {
-    std::cout << "Interpolate" << std::endl;
+    // std::cout << "Interpolate" << std::endl;
     Eigen::VectorXd fv(sizeNodes);
 
     int sum = 0;
@@ -129,7 +130,7 @@ Eigen::VectorXd interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNode
 }
 
 Eigen::VectorXd rqi(Eigen::VectorXd fv, Eigen::MatrixXd L, int sizeNodes) {
-    std::cout << "RQI" << std::endl;
+    // std::cout << "RQI" << std::endl;
     float theta = fv.transpose() * L * fv;
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(sizeNodes, sizeNodes);
     double p;
@@ -139,14 +140,12 @@ Eigen::VectorXd rqi(Eigen::VectorXd fv, Eigen::MatrixXd L, int sizeNodes) {
         theta = fv.transpose() * L * fv;
         p = ((L * fv).transpose() * (L * fv) - theta * theta);
         p = sqrt(p);
-        std::cout << "p: " << p << std::endl;
+        // std::cout << "p: " << p << std::endl;
     } while (p < 0.0000001);
 
     return fv;
 
 }
-
-bool hasImproved = true;
 
 Eigen::VectorXd fiedler(Graph& G) {
 
@@ -170,18 +169,18 @@ Eigen::VectorXd fiedler(Graph& G) {
     }
 
     if (sizeNodes > 50 && hasImproved) { //grandezza grafo maggiore di un certo numero di nodi
-        std::cout << "Coarsening" << std::endl;
+        // std::cout << "Coarsening" << std::endl;
         Graph G1 = coarsening(G);
         if (G1.num_of_nodes() == G.num_of_nodes() - 1)
             hasImproved = false;
-        std::cout << "Fine Coarsening con " << G1.num_of_nodes() << " nodes." << std::endl;
+        // std::cout << "Fine Coarsening con " << G1.num_of_nodes() << " nodes." << std::endl;
         fv1 = fiedler(G1);
         fv = interpolate(fv1, L, sizeNodes);
         fv = rqi(fv, L, sizeNodes);
-        std::cout << "Fine RQI" << std::endl;
+        // std::cout << "Fine RQI" << std::endl;
     }
     else {
-        std::cout << "Laplacian matrix:" << std::endl;
+        // std::cout << "Laplacian matrix:" << std::endl;
         Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
 
         // Eigen::VectorXd eigenvalues = solver.eigenvalues().real();
@@ -209,7 +208,7 @@ std::vector<bool> MLRSB(Graph& G, int p) {
 
     double medianValue = computeMedian(fiedlerV);
     std::vector<bool> partition(G.num_of_nodes());
-    std::cout << "Start partitioning" << std::endl;
+    // std::cout << "Start partitioning" << std::endl;
     for (int i = 0; i < G.num_of_nodes(); ++i) {
         if (fiedlerV(i) <= medianValue) {
             partition[i] = 0; // Assign node i to partition 0
@@ -218,7 +217,7 @@ std::vector<bool> MLRSB(Graph& G, int p) {
             partition[i] = 1; // Assign node i to partition 1
         }
     }
-    std::cout << "End partitioning" << std::endl;
+    // std::cout << "End partitioning" << std::endl;
 
     double weightA = 0.0;
     double weightB = 0.0;
@@ -231,7 +230,7 @@ std::vector<bool> MLRSB(Graph& G, int p) {
         }
     }
 
-    std::cout << "Partition Balance Factor: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
+    std::cout << "Partition Balance Factor MLRSB: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
     std::cout << "Cut size MLRSB: " << calculateCutSize(G, partition) << std::endl;
 
 
