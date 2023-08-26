@@ -1,4 +1,4 @@
-default: compile_eigen run clean
+default: compile run clean
 
 compile:
 	g++ -std=c++20 Graph/*.cpp KL/*.cpp main.cpp -o main

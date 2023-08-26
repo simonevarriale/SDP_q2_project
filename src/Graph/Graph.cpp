@@ -180,3 +180,48 @@ std::pair<int, int> Graph::getCoarseIdsById(int nodeId) {
     }
     return { -1, -1 }; // Return {-1, -1} if the node doesn't have valid coarse IDs.
 }
+
+std::unordered_set<int> Graph::findMaximalIndependentSet(const std::unordered_set<int>& nodes) {
+    std::unordered_set<int> mis;
+
+    std::unordered_set<int> remainingNodes(nodes);
+    
+
+    while (!remainingNodes.empty()) {
+        int maxDegreeNode = -1;
+        int maxDegree = -1;
+
+        // Find the node with the highest degree in the remaining nodes
+        for (int node : remainingNodes) {
+            int degree = 0;
+            for (const Edge& edge : Edges) {
+                if (edge.n1 == node || edge.n2 == node) {
+                    degree++;
+                }
+            }
+            if (degree > maxDegree) {
+                maxDegree = degree;
+                maxDegreeNode = node;
+            }
+        }
+
+        // Add the chosen node to the MIS and remove it and its neighbors from consideration
+        if (maxDegreeNode != -1) {
+            mis.insert(maxDegreeNode);
+            remainingNodes.erase(maxDegreeNode);
+            for (const Edge& edge : Edges) {
+                if (edge.n1 == maxDegreeNode || edge.n2 == maxDegreeNode) {
+                    if (remainingNodes.find(edge.n1) != remainingNodes.end()) {
+                        remainingNodes.erase(edge.n1);
+                    }
+                    if (remainingNodes.find(edge.n2) != remainingNodes.end()) {
+                        remainingNodes.erase(edge.n2);
+                    }
+                }
+            }
+        }
+    }
+
+    return mis;
+}
+

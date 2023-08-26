@@ -5,6 +5,7 @@
 #include <map>
 #include <stack>
 #include <random>
+#include <unordered_set>
 
 typedef struct {
 
@@ -93,12 +94,47 @@ public:
     int findNodeIdByCoarseSingleId(int n);
     std::pair<int, int> getCoarseIdsById(int nodeId);
 
+    std::unordered_set<int> findMaximalIndependentSet(const std::unordered_set<int>& nodes);
+    //void coarsenGraph();
+
     // Debug functions
     void printNodes();
     void printEdges();
     void printAdjacencyMatrix();
     void printDegreeMatrix();
     void printGraph() const;
+
+    Graph& operator=(const Graph& other) {
+    if (this == &other) {
+        return *this; // Self-assignment check
+    }
+
+    // Copy primitive member variables
+    sizeN = other.sizeN;
+    sizeE = other.sizeE;
+
+    // Copy Nodes using deep copy
+    Nodes.clear(); // Clear current Nodes
+    for (const auto& nodePair : other.Nodes) {
+        Node newNode = nodePair.second;
+        if (newNode.coarse != nullptr) {
+            newNode.coarse = new Coarse(*nodePair.second.coarse); // Deep copy Coarse
+        }
+        Nodes[nodePair.first] = newNode;
+    }
+
+    // Copy Edges
+    Edges = other.Edges;
+
+    // Copy MatAdj
+    MatAdj = other.MatAdj;
+
+    // Copy MatDegree
+    MatDegree = other.MatDegree;
+
+    return *this;
+}
+
 };
 
 #endif
