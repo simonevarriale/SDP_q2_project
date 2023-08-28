@@ -403,11 +403,12 @@ std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
     for (auto& edge : edges) {
         if (!visited[edge.n1] && !visited[edge.n2]) {
             M.push_back(std::make_pair(edge.n1, edge.n2));
+            //std::cout<<"M: ("<<edge.n1<<","<<edge.n2<<")"<<std::endl;
             visited[edge.n1] = true;
             visited[edge.n2] = true;
         }
     }
-
+    
     return M;
 }
 
@@ -428,6 +429,7 @@ Graph coarsening(Graph& G) {
         coarse->adj.push_back(matAdj[edge.first]);
         coarse->adj.push_back(matAdj[edge.second]);
         G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
+        delete coarse;
     }
 
     // Process the unmatched nodes
@@ -451,6 +453,7 @@ Graph coarsening(Graph& G) {
             coarse->weight2 = nodes[nodeId].weight;
             coarse->adj.push_back(matAdj[nodeId]);
             G1.setNode(G1.returnLastID(), node.weight, coarse);
+            delete coarse;
         }
     }
 
@@ -460,6 +463,7 @@ Graph coarsening(Graph& G) {
     // settare edge del nuovo grafo
     for (auto& edge : M) {
         for (int i = 0; i < G.num_of_nodes(); i++) {
+            
             if (i == edge.first || i == edge.second) {
                 continue;
             }
@@ -500,23 +504,23 @@ Graph coarsening(Graph& G) {
     }
 
     // Remove nodes that are not part of any edge
-    std::vector<int> nodesToRemove;
-    for (const auto& nodePair : newNodes) {
-        int nodeId = nodePair.first;
-        bool isMatched = false;
-        for (const auto& edgePair : addedEdges) {
-            if (edgePair.first == nodeId || edgePair.second == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        if (!isMatched) {
-            nodesToRemove.push_back(nodeId);
-        }
-    }
-    for (const auto& nodeId : nodesToRemove) {
-        G1.removeNode(nodeId);
-    }
+    // std::vector<int> nodesToRemove;
+    // for (const auto& nodePair : newNodes) {
+    //     int nodeId = nodePair.first;
+    //     bool isMatched = false;
+    //     for (const auto& edgePair : addedEdges) {
+    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
+    //             isMatched = true;
+    //             break;
+    //         }
+    //     }
+    //     if (!isMatched) {
+    //         nodesToRemove.push_back(nodeId);
+    //     }
+    // }
+    // for (const auto& nodeId : nodesToRemove) {
+    //     G1.removeNode(nodeId);
+    // }
 
     G1.setSizeNodes(G1.getNodes().size());
     G1.setSizeEdges(G1.getEdges().size());
@@ -532,7 +536,7 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
 
     //std::vector<bool> partition(numNodes, false); // Partition assignment
     bool hasImproved = true;
-    std::vector<bool> prevPartition = partition;
+    
 
     if(partition.empty()){
         partition.resize(G.num_of_nodes(), false); // Initial partition A
@@ -546,7 +550,7 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
             }
         }
     }
-
+    std::vector<bool> prevPartition = partition;
     // std::cout << "Initial partition KL: " << std::endl;
     // for (int i = 0; i < G.num_of_nodes(); ++i) {
     //        std::cout << partition[i] << " ";
@@ -558,10 +562,12 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
     int maxIterations = numNodes / 2; // Maximum iterations as per the pseudocode
     int g_max = 1;
     int i=0;
+    
 
     do {
         std::vector<int> D(numNodes, 0); // Initialize D values
         std::vector<int> gv, av, bv;     // Lists to store gains and nodes
+        
 
         for (int n = 0; n < halfNumNodes; ++n) {
             // Compute D values for all nodes in A and B
@@ -588,7 +594,7 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
             // Remove a and b from further consideration in this pass
             partition[bestA] = false;
             partition[bestB] = true;
-
+                
             // Update gv, av, and bv
             gv.push_back(bestG);
             av.push_back(bestA);
@@ -602,6 +608,7 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
                     D[i] += 2 * G.getMatAdj()[bestA][i][1] - 2 * G.getMatAdj()[bestB][i][1];
                 }
             }
+            
         }
 
         // Find k which maximizes g_max, the sum of gv[1], ..., gv[k]
@@ -937,6 +944,7 @@ std::unordered_map<int , std::pair<int,int>> coarsenGraph(Graph& G) {
         coarse->adj.push_back(matAdj[edge.second]);
         G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
         coarseNodes.insert({G1.returnLastID()-1, {edge.first,edge.second }});
+        delete coarse;
     }
 
     // Process the unmatched nodes
@@ -961,6 +969,7 @@ std::unordered_map<int , std::pair<int,int>> coarsenGraph(Graph& G) {
             coarse->adj.push_back(matAdj[nodeId]);
             G1.setNode(G1.returnLastID(), node.weight, coarse);
             coarseNodes.insert({G1.returnLastID()-1, {nodeId,nodeId }});
+            delete coarse;
         }
     }
 
@@ -1010,23 +1019,23 @@ std::unordered_map<int , std::pair<int,int>> coarsenGraph(Graph& G) {
     }
 
     // Remove nodes that are not part of any edge
-    std::vector<int> nodesToRemove;
-    for (const auto& nodePair : newNodes) {
-        int nodeId = nodePair.first;
-        bool isMatched = false;
-        for (const auto& edgePair : addedEdges) {
-            if (edgePair.first == nodeId || edgePair.second == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        if (!isMatched) {
-            nodesToRemove.push_back(nodeId);
-        }
-    }
-    for (const auto& nodeId : nodesToRemove) {
-        G1.removeNode(nodeId);
-    }
+    // std::vector<int> nodesToRemove;
+    // for (const auto& nodePair : newNodes) {
+    //     int nodeId = nodePair.first;
+    //     bool isMatched = false;
+    //     for (const auto& edgePair : addedEdges) {
+    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
+    //             isMatched = true;
+    //             break;
+    //         }
+    //     }
+    //     if (!isMatched) {
+    //         nodesToRemove.push_back(nodeId);
+    //     }
+    // }
+    // for (const auto& nodeId : nodesToRemove) {
+    //     G1.removeNode(nodeId);
+    // }
 
     G1.setSizeNodes(G1.getNodes().size());
     G1.setSizeEdges(G1.getEdges().size());
@@ -1068,10 +1077,14 @@ std::vector<bool> multilevel_KL(Graph& G) {
 
     std::vector<bool> newPartition;
     //coarsenG.push_back(G);
+    std::cout << "Coarsening" << std::endl;
     coarsenG.push_back(coarsenGraph(G));
+    std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and "<< G.num_of_edges() <<" edges" << std::endl;
     int i = 0;
     while (coarsenG[i].size() > 10) {
+        std::cout << "Coarsening" << std::endl;
         coarsenG.push_back(coarsenGraph(G));
+        std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and "<< G.num_of_edges() <<" edges" << std::endl;
         i++;
     }
 
