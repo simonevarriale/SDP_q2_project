@@ -15,6 +15,8 @@
 #include <barrier>
 #include "./Graph/Graph.h"
 
+int numThreads = 4;
+
 extern std::vector<bool> RSB(Graph& G, int p);
 extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern Graph coarsening(Graph& graph);
@@ -26,10 +28,13 @@ extern std::vector<bool> fm(Graph& graph);
 extern double calculateBalanceF(Graph& graph, const std::vector<bool>& partitionA);
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 extern std::vector<bool> MLRSB(Graph& G, int p);
+extern std::vector<std::vector<bool>> pMLRSB(Graph& G, int p);
+extern std::vector<std::vector<bool>> pWayPartition(Graph& G, int p);
 extern std::vector<bool> Parallel_MLRSB(Graph& G, int p);
 extern std::vector<bool> Parallel_RSB(Graph& G, int p);
+extern std::vector<std::vector<bool>> parallelpRSB(Graph& G, int p);
 extern std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition);
-extern std::unordered_map<int , std::pair<int,int>> coarsenGraph(Graph& G);
+extern std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G);
 
 void read_input(const std::string& filename, Graph* G) {
 
@@ -263,6 +268,7 @@ int main() {
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = endTime - startTime;
     std::vector<bool> partition = {};
+    int i = 0;
 
     Graph G;
     Graph G1;
@@ -290,17 +296,16 @@ int main() {
 
     /////////////////////////////////////////////////////SEQUENTIAL GRAPH READ//////////////////////////////////////////////
     startTime = std::chrono::high_resolution_clock::now();
-    //read_input(file4, &G);
-    read_input2(file7, &G);
-    // read_input3(file7, &G)
+    read_input(file4, &G);
+    // read_input2(file7, &G);
     G.computeAdjacencyMatrix();
     endTime = std::chrono::high_resolution_clock::now();
     duration = endTime - startTime;
     std::cout << "Execution time sequential graph reading: " << duration.count() << " seconds" << std::endl;
     std::cout << "Num of nodes: " << G.num_of_nodes() << " and Num of Edges: " << G.num_of_edges() << std::endl;
-    G1= G;
+    // G1 = G;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     /////////////////////////////////////////////////////PARALLEL GRAPH READ//////////////////////////////////////////////
     // startTime = std::chrono::high_resolution_clock::now();
     // // read_input(file4, &G);
@@ -331,6 +336,24 @@ int main() {
     // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////////P-RSB////////////////////////////////////////////////////
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto pRSBpartition = pWayPartition(G, 4);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time pRSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // i = 0;
+    // for (auto v : pRSBpartition) {
+    //     std::cout << "Partition " << i++ << ": ";
+    //     for (auto i : v) {
+    //         std::cout << i << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /////////////////////////////////////////////////PARALLEL RSB////////////////////////////////////////////////
     // startTime = std::chrono::high_resolution_clock::now();
     // auto partitionParallelRSB = Parallel_RSB(G, 2);
@@ -340,6 +363,24 @@ int main() {
     // std::cout << "Partitioning result:" << std::endl;
     // for (auto v : partitionParallelRSB) {
     //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     /////////////////////////////////////////////////////PARALLEL P-RSB////////////////////////////////////////////////////
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto parallelpMLRSBpartition = parallelpRSB(G, 4);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time Parallel pRSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // i = 0;
+    // for (auto v : parallelpMLRSBpartition) {
+    //     std::cout << "Partition " << i++ << ": ";
+    //     for (auto i : v) {
+    //         std::cout << i << " ";
+    //     }
+    //     std::cout << std::endl;
     // }
     // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,7 +398,38 @@ int main() {
     // std::cout << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////////P-MLRSB////////////////////////////////////////////////////
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto pMLRSBpartition = parallelpMLRSB(G, 4);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time pMLRSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // int i = 0;
+    // for (auto v : pMLRSBpartition) {
+    //     std::cout << "Partition " << i++ << ": ";
+    //     for (auto i : v) {
+    //         std::cout << i << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     //////////////////////////////////////////////////PARALLEL MLRSB/////////////////////////////////////////////
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto parallelMRSBpartition = Parallel_MLRSB(G, 2);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time Parallel MLRSB: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Partitioning result:" << std::endl;
+    // for (auto v : parallelMRSBpartition) {
+    //     std::cout << v << " ";
+    // }
+    // std::cout << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////PARALLEL P-MLRSB/////////////////////////////////////////////
     // startTime = std::chrono::high_resolution_clock::now();
     // auto parallelMRSBpartition = Parallel_MLRSB(G, 2);
     // endTime = std::chrono::high_resolution_clock::now();
@@ -385,31 +457,28 @@ int main() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////MULTILEVEL KL/////////////////////////////////////////////////////
-    startTime = std::chrono::high_resolution_clock::now();
-      auto multilevel = multilevel_KL(G);
-      endTime = std::chrono::high_resolution_clock::now();
-      duration = endTime - startTime;
-      std::cout << "Execution time multilevel KL: " << duration.count() << " seconds" << std::endl;
-      std::cout << "Final multilevel partition KL: " << std::endl;
-      for (int i = 0; i < G1.num_of_nodes(); ++i) {
-          std::cout << multilevel[i] << " ";
-      }
-      std::cout << std::endl;
-
-      // Remaining code for calculating balance and cut size...
-    double weightA = 0.0;
-    double weightB = 0.0;
-    for (int i = 0; i < G1.num_of_nodes(); i++) {
-        if (multilevel[i]) {
-            weightA += G1.getNodeWeight(i);
-        }
-        else {
-            weightB += G1.getNodeWeight(i);
-        }
-    }
-
-    std::cout << "Partition Balance Factor ML KL: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
-    std::cout << "Cut size ML KL: " << calculateCutSize(G1, multilevel) << std::endl;
+    // startTime = std::chrono::high_resolution_clock::now();
+    // auto multilevel = multilevel_KL(G);
+    // endTime = std::chrono::high_resolution_clock::now();
+    // duration = endTime - startTime;
+    // std::cout << "Execution time multilevel KL: " << duration.count() << " seconds" << std::endl;
+    // std::cout << "Final multilevel partition KL: " << std::endl;
+    // for (int i = 0; i < G1.num_of_nodes(); ++i) {
+    //     std::cout << multilevel[i] << " ";
+    // }
+    // std::cout << std::endl;
+    // double weightA = 0.0;
+    // double weightB = 0.0;
+    // for (int i = 0; i < G1.num_of_nodes(); i++) {
+    //     if (multilevel[i]) {
+    //         weightA += G1.getNodeWeight(i);
+    //     }
+    //     else {
+    //         weightB += G1.getNodeWeight(i);
+    //     }
+    // }
+    // std::cout << "Partition Balance Factor ML KL: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
+    // std::cout << "Cut size ML KL: " << calculateCutSize(G1, multilevel) << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////FM/////////////////////////////////////////////////////

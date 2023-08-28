@@ -14,7 +14,7 @@ std::mutex partitionMutex;
 std::mutex weightAMutex;
 std::mutex weightBMutex;
 bool parallel_hasImproved = true;
-int numThreads = 4;
+extern int numThreads;
 
 extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 extern Eigen::VectorXd rqi(Eigen::VectorXd fv, Eigen::MatrixXd L, int sizeNodes);

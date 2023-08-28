@@ -238,3 +238,164 @@ std::vector<bool> MLRSB(Graph& G, int p) {
 
 
 }
+
+std::vector<int> sortIndices(const Eigen::VectorXd& vec) {
+    std::vector<int> indices(vec.size());
+    for (int i = 0; i < vec.size(); ++i) {
+        indices[i] = i;
+    }
+
+    // Sort indices based on the values in the vector
+    std::sort(indices.begin(), indices.end(), [&vec](int a, int b) {
+        return vec[a] < vec[b];
+        });
+
+    return indices;
+}
+
+int calculateCutSizeBetweenPartitions(Graph& G, const std::vector<bool>& partitionA, const std::vector<bool>& partitionB) {
+    int cutSize = 0;
+
+    const std::vector<std::vector<std::vector<int>>>& matAdj = G.getMatAdj();
+
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        for (int j = 0; j < G.num_of_nodes(); ++j) {
+            if (partitionA[i] && partitionB[j] && matAdj[i][j][0] != -1) {
+                cutSize += matAdj[i][j][1]; // Use the weight stored in the adjacency matrix
+            }
+        }
+    }
+
+    return cutSize;
+}
+
+
+// Calculate the total cut size across multiple partitions
+int calculateCutSizePartitions(Graph& G, const std::vector<std::vector<bool>>& partitions) {
+    int totalCutSize = 0;
+    for (int i = 0; i < partitions.size(); ++i) {
+        for (int j = i + 1; j < partitions.size(); ++j) {
+            totalCutSize += calculateCutSizeBetweenPartitions(G, partitions[i], partitions[j]);
+        }
+    }
+    return totalCutSize;
+}
+
+std::vector<std::vector<bool>> pWayPartition(Graph& G, int p) {
+    int sizeNodes = G.num_of_nodes();
+    Eigen::MatrixXd L(sizeNodes, sizeNodes);
+
+    G.computeMatrixDegree();
+    auto matDeg = G.getMatDegree();
+    auto matAdj = G.getMatAdj();
+
+    // Compute Laplacian matrix
+    for (int i = 0; i < sizeNodes; i++) {
+        for (int j = 0; j < sizeNodes; j++) {
+            L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
+        }
+    }
+
+    Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
+
+    if (eigenSolver.info() == Eigen::Success) {
+        Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real();
+        Eigen::VectorXd fiedlerVector = eigenvectors.col(1);
+
+        // Sort fiedlerVector to get partitioning indices
+        std::cout << "Sorting indices" << std::endl;
+        std::vector<int> sortedIndices = sortIndices(fiedlerVector);
+        std::cout << "Finished sorting indices" << std::endl;
+
+        // Calculate the size of each sub-partition
+        int subPartitionSize = sizeNodes / p;
+        std::vector<std::vector<bool>> partitions(p, std::vector<bool>(sizeNodes, false));
+
+        for (int i = 0; i < p; ++i) {
+            int startIndex = i * subPartitionSize;
+            int endIndex = (i == p - 1) ? sizeNodes : (i + 1) * subPartitionSize;
+
+            for (int j = startIndex; j < endIndex; ++j) {
+                partitions[i][sortedIndices[j]] = true;
+            }
+        }
+
+        std::vector<double> partitionWeights(p, 0.0);
+        for (int i = 0; i < p; ++i) {
+            for (int j = 0; j < G.num_of_nodes(); ++j) {
+                if (partitions[i][j]) {
+                    partitionWeights[i] += G.getNodeWeight(j);
+                }
+            }
+        }
+
+        for (int i = 0; i < p; ++i) {
+            std::cout << "Partition " << i << " weight: " << partitionWeights[i] << std::endl;
+        }
+
+        std::cout << "Cut size pRSB: " << calculateCutSizePartitions(G, partitions) << std::endl;
+
+        return partitions;
+    }
+    else {
+        std::cout << "Failed to compute eigenvectors." << std::endl;
+    }
+
+    return {};
+}
+
+std::vector<std::vector<bool>> pMLRSB(Graph& G, int p) {
+
+    Eigen::VectorXd fiedlerV;
+
+    fiedlerV = fiedler(G);
+
+    std::vector<double> partitionValues(G.num_of_nodes());
+
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        partitionValues[i] = fiedlerV(i);
+    }
+
+    std::vector<double> partitionThresholds(p - 1);
+    std::vector<std::vector<bool>> partitions(p, std::vector<bool>(G.num_of_nodes(), false));
+
+    // Sort the partition values
+    std::sort(partitionValues.begin(), partitionValues.end());
+
+    // Calculate partition thresholds
+    for (int i = 1; i < p; ++i) {
+        partitionThresholds[i - 1] = partitionValues[i * G.num_of_nodes() / p];
+    }
+
+    // Assign nodes to partitions based on thresholds
+    for (int i = 0; i < G.num_of_nodes(); ++i) {
+        bool assigned = false;
+        for (std::size_t j = 0; j < p - 1; ++j) {
+            if (fiedlerV(i) <= partitionThresholds[j]) {
+                partitions[j][i] = true;
+                assigned = true;
+                break;
+            }
+        }
+        if (!assigned) {
+            partitions[p - 1][i] = true;
+        }
+    }
+
+    // Calculate partition statistics and print results
+    for (std::size_t part = 0; part < p; ++part) {
+        double partitionWeight = 0.0;
+        int numNodes = 0;
+        for (int i = 0; i < G.num_of_nodes(); ++i) {
+            if (partitions[part][i]) {
+                partitionWeight += G.getNodeWeight(i);
+                numNodes++;
+            }
+        }
+        std::cout << "Partition " << part << " Weight: " << partitionWeight << "; Number of nodes: " << numNodes << std::endl;
+    }
+
+    std::cout << "Cut size pMLRSB: " << calculateCutSizePartitions(G, partitions) << std::endl;
+
+    return partitions;
+}

@@ -84,6 +84,16 @@ public:
     void setAdjacencyMatrix();
     void setAdjacencyMatrixValue(int i, int j, int value, int weight = 1);
 
+    double getTotalNodeWeight() {
+        double totalWeight = 0.0;
+
+        for (int i = 0; i < sizeN; i++) {
+            totalWeight += this->getNodeWeight(i);
+        }
+
+        return totalWeight;
+    }
+
 
     void computeMatrixDegree();
     void incrementDegree(int idNode);
@@ -105,35 +115,35 @@ public:
     void printGraph() const;
 
     Graph& operator=(const Graph& other) {
-    if (this == &other) {
-        return *this; // Self-assignment check
-    }
-
-    // Copy primitive member variables
-    sizeN = other.sizeN;
-    sizeE = other.sizeE;
-
-    // Copy Nodes using deep copy
-    Nodes.clear(); // Clear current Nodes
-    for (const auto& nodePair : other.Nodes) {
-        Node newNode = nodePair.second;
-        if (newNode.coarse != nullptr) {
-            newNode.coarse = new Coarse(*nodePair.second.coarse); // Deep copy Coarse
+        if (this == &other) {
+            return *this; // Self-assignment check
         }
-        Nodes[nodePair.first] = newNode;
+
+        // Copy primitive member variables
+        sizeN = other.sizeN;
+        sizeE = other.sizeE;
+
+        // Copy Nodes using deep copy
+        Nodes.clear(); // Clear current Nodes
+        for (const auto& nodePair : other.Nodes) {
+            Node newNode = nodePair.second;
+            if (newNode.coarse != nullptr) {
+                newNode.coarse = new Coarse(*nodePair.second.coarse); // Deep copy Coarse
+            }
+            Nodes[nodePair.first] = newNode;
+        }
+
+        // Copy Edges
+        Edges = other.Edges;
+
+        // Copy MatAdj
+        MatAdj = other.MatAdj;
+
+        // Copy MatDegree
+        MatDegree = other.MatDegree;
+
+        return *this;
     }
-
-    // Copy Edges
-    Edges = other.Edges;
-
-    // Copy MatAdj
-    MatAdj = other.MatAdj;
-
-    // Copy MatDegree
-    MatDegree = other.MatDegree;
-
-    return *this;
-}
 
 };
 

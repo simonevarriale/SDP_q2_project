@@ -185,7 +185,7 @@ std::unordered_set<int> Graph::findMaximalIndependentSet(const std::unordered_se
     std::unordered_set<int> mis;
 
     std::unordered_set<int> remainingNodes(nodes);
-    
+
 
     while (!remainingNodes.empty()) {
         int maxDegreeNode = -1;
@@ -224,4 +224,5 @@ std::unordered_set<int> Graph::findMaximalIndependentSet(const std::unordered_se
 
     return mis;
 }
+
 
