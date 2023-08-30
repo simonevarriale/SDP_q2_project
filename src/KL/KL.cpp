@@ -1,3 +1,4 @@
+#include "../utils/utils.h"
 #include <iostream>
 #include <vector>
 #include <random>
@@ -16,21 +17,6 @@ typedef struct {
     int gMax;
 } G_Max;
 
-void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains);
-
-int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA) {
-    int cutSize = 0;
-
-    for (const Edge& edge : graph.getEdges()) {
-        if (partitionA[edge.n1] != partitionA[edge.n2]) {
-            cutSize += edge.weight;
-            // cutSize++;
-        }
-    }
-
-    return cutSize;
-}
-
 // Function to generate a random initial bisection
 std::vector<bool> generateRandomBisection(Graph& graph) {
     int sizeNodes = graph.num_of_nodes();
@@ -47,184 +33,6 @@ std::vector<bool> generateRandomBisection(Graph& graph) {
     }
 
     return partitionA;
-}
-
-// Function to compute the net gains for each node in set A
-void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& netGains) {
-    auto matAdj = graph.getMatAdj();
-    int sizeNodes = graph.num_of_nodes();
-
-    for (int i = 0; i < sizeNodes; ++i) {
-        int gain = 0;
-        for (int j = 0; j < sizeNodes; ++j) {
-            if (partitionA[i] != partitionA[j]) {
-                gain += matAdj[i][j][1];
-            }
-            else {
-                gain -= matAdj[i][j][1];
-            }
-        }
-        netGains[i] = gain;
-    }
-}
-
-// Original Kernighan-Lin algorithm
-// std::vector<bool> kernighanLinOG(Graph& graph) {
-//     int sizeNodes = graph.num_of_nodes();
-//     int halfSize = sizeNodes / 2;
-
-//     auto partitionA = generateRandomBisection(graph); // Initial partition A
-//     std::cout << "Initial partition: " << std::endl;
-//     for (int i = 0; i < sizeNodes; ++i) {
-//         std::cout << partitionA[i] << " ";
-//     }
-//     std::cout << std::endl;
-
-//     std::vector<int> netGains(sizeNodes, 0); // Net gains for each node
-//     // Perform iterations until no further improvement can be made
-//     bool improved = true;
-//     while (improved) {
-//         improved = false;
-//         computeNetGains(graph, partitionA, netGains);
-
-//         for (int i = 0; i < halfSize; ++i) {
-//             int maxGainIdx = -1;
-//             int maxGain = 0;
-
-//             // Find the node in set A with the maximum net gain
-//             for (int j = 0; j < sizeNodes; ++j) {
-//                 if (!partitionA[j] && netGains[j] > maxGain) {
-//                     maxGainIdx = j;
-//                     maxGain = netGains[j];
-//                 }
-//             }
-
-//             int nodeToMove = maxGainIdx;
-//             partitionA[nodeToMove] = true;
-
-//             // Find the corresponding node in set B with the maximum net gain
-//             for (int j = 0; j < sizeNodes; ++j) {
-//                 if (partitionA[j] && netGains[j] > maxGain) {
-//                     maxGainIdx = j;
-//                     maxGain = netGains[j];
-//                 }
-//             }
-
-//             // Check if there is an improvement in cut size after the swap
-//             int cutBefore = calculateCutSize(graph, partitionA);
-//             partitionA[maxGainIdx] = false;
-//             int cutAfter = calculateCutSize(graph, partitionA);
-//             if (cutAfter < cutBefore) {
-//                 improved = true;
-//             } else {
-//                 partitionA[nodeToMove] = false;
-//             }
-//         }
-//     }
-//     return partitionA;
-// }
-
-// Kernighan-Lin algorithm
-// std::vector<bool> kernighanLin(Graph& graph) {
-//     // auto partitionA = generateRandomBisection(graph); // Initial partition A
-//     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
-//     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
-//         partitionA[i] = true;
-//     }
-//     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
-//     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
-//     std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
-//     G_Max gMax;
-
-//     std::vector<G_Max> vecGMax;
-//     int maxGain = 0;
-
-//     bool hasImproved = true;
-//     std::vector<bool> prevPartition = partitionA;
-
-//     do {
-//         gMax.gMax = INT_MIN;
-//         computeNetGains(graph, partitionA, netGains);
-
-
-//         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
-
-//             for (int i = 0; i < graph.num_of_nodes(); i++) {
-//                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
-//                     //prova nodo unlocked
-//                     if (!lock[i] && !lock[j]) {
-//                         g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
-//                         if (g[i][j] > gMax.gMax) {
-//                             gMax.gMax = g[i][j];
-//                             gMax.i = i;
-//                             gMax.j = j;
-//                         }
-//                     }
-//                 }
-//             }
-
-//             vecGMax.push_back(gMax);
-
-//             lock[gMax.i] = true;
-//             lock[gMax.j] = true;
-
-//             for (int i = 0; i < graph.num_of_nodes(); i++) {
-//                 if (!lock[i]) {
-//                     if (!partitionA[i]) {
-//                         netGains[i] = netGains[i] + 2 * graph.getMatAdj()[i][gMax.i][1] - 2 * graph.getMatAdj()[i][gMax.j][1];
-//                     }
-//                     else {
-//                         netGains[i] = netGains[i] - 2 * graph.getMatAdj()[i][gMax.i][1] + 2 * graph.getMatAdj()[i][gMax.j][1];
-//                     }
-//                 }
-//             }
-//         }
-
-//         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
-//         maxGain = INT_MIN;
-//         int maxGainIdx = 0;
-//         int sum = 0;
-//         for (int k = 0; k < vecGMax.size(); ++k) {
-//             // Calculate the sum of gains[0] to gains[k]
-
-//             for (int i = 0; i <= k; ++i) {
-//                 sum += vecGMax[i].gMax;
-//             }
-//             if (sum > maxGain) {
-//                 maxGain = sum;
-//                 maxGainIdx = k;
-//             }
-//         }
-
-//         if (maxGain > 0) {
-//             for (int i = 0; i <= maxGainIdx; i++) {
-//                 partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
-//                 partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
-//             }
-//         }
-
-//         // Clear the locks
-//         for (int i = 0; i < graph.num_of_nodes(); ++i) {
-//             lock[i] = false;
-//         }
-//         vecGMax.clear();
-
-//         // Check for improvement in the partition
-//         hasImproved = (prevPartition != partitionA);
-//         prevPartition = partitionA;
-
-//     } while (maxGain <= 0 && hasImproved);
-
-//     return partitionA;
-// }
-// Helper function to calculate the total weight of all nodes
-int calculateTotalWeight(Graph& graph) {
-    int totalWeight = 0;
-    for (const auto& nodePair : graph.getNodes()) {
-        totalWeight += nodePair.second.weight;
-    }
-    // std::cout<<"Total weight of nodes: "<<totalWeight<<std::endl;
-    return totalWeight;
 }
 
 std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) {
@@ -391,154 +199,15 @@ std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {}) 
     return partitionA;
 }
 
-std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
-    std::vector<std::pair<int, int>> M;
-    std::vector<bool> visited(G.num_of_nodes(), false);
-
-    std::vector<Edge> edges = G.getEdges();
-
-    // Sort the edges in decreasing order of weight
-    std::sort(edges.begin(), edges.end(), [](const Edge& e1, const Edge& e2) { return e1.weight > e2.weight; });
-
-    for (auto& edge : edges) {
-        if (!visited[edge.n1] && !visited[edge.n2]) {
-            M.push_back(std::make_pair(edge.n1, edge.n2));
-            //std::cout<<"M: ("<<edge.n1<<","<<edge.n2<<")"<<std::endl;
-            visited[edge.n1] = true;
-            visited[edge.n2] = true;
-        }
-    }
-    
-    return M;
-}
-
-Graph coarsening(Graph& G) {
-    Graph G1;
-    std::map<int, Node> nodes = G.getNodes();
-
-    std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
-
-    auto matAdj = G.getMatAdj();
-
-    for (auto& edge : M) {
-        Coarse* coarse = new Coarse;
-        coarse->n1 = edge.first;
-        coarse->n2 = edge.second;
-        coarse->weight1 = nodes.find(edge.first)->second.weight;
-        coarse->weight2 = nodes.find(edge.second)->second.weight;
-        coarse->adj.push_back(matAdj[edge.first]);
-        coarse->adj.push_back(matAdj[edge.second]);
-        G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
-        delete coarse;
-    }
-
-    // Process the unmatched nodes
-    for (const auto& nodePair : nodes) {
-        int nodeId = nodePair.first;
-        Node& node = nodes[nodeId];
-        // Check if the node is not part of any matching pair
-        bool isMatched = false;
-        for (const auto& edgePair : M) {
-            if (edgePair.first == nodeId || edgePair.second == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        // If the node is not matched, add it to G1 with nullptr for Coarse pointer
-        if (!isMatched) {
-            Coarse* coarse = new Coarse;
-            coarse->n1 = nodeId;
-            coarse->n2 = nodeId;
-            coarse->weight1 = nodes[nodeId].weight;
-            coarse->weight2 = nodes[nodeId].weight;
-            coarse->adj.push_back(matAdj[nodeId]);
-            G1.setNode(G1.returnLastID(), node.weight, coarse);
-            delete coarse;
-        }
-    }
-
-    std::map<int, Node> newNodes = G1.getNodes();
-    std::set<std::pair<int, int>> addedEdges;
-
-    // settare edge del nuovo grafo
-    for (auto& edge : M) {
-        for (int i = 0; i < G.num_of_nodes(); i++) {
-            
-            if (i == edge.first || i == edge.second) {
-                continue;
-            }
-            if (matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
-                // dobbiamo unire edge del nodo trovato con il nodo dato dai 2 uniti
-                // cerco quindi l'id del nodo nuovo in G1 tramite gli id dei nodi che l'hanno formato
-                // forse potremmo fare una map per rendere la ricerca costante e non sequenziale
-                int id1 = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.first);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-        }
-    }
-
-    // Remove nodes that are not part of any edge
-    // std::vector<int> nodesToRemove;
-    // for (const auto& nodePair : newNodes) {
-    //     int nodeId = nodePair.first;
-    //     bool isMatched = false;
-    //     for (const auto& edgePair : addedEdges) {
-    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
-    //             isMatched = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!isMatched) {
-    //         nodesToRemove.push_back(nodeId);
-    //     }
-    // }
-    // for (const auto& nodeId : nodesToRemove) {
-    //     G1.removeNode(nodeId);
-    // }
-
-    G1.setSizeNodes(G1.getNodes().size());
-    G1.setSizeEdges(G1.getEdges().size());
-    G1.computeAdjacencyMatrix();
-    // G1.computeMatrixDegree();
-
-    return G1;
-}
-
 std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
     int numNodes = G.num_of_nodes();
     int halfNumNodes = numNodes / 2;
 
     //std::vector<bool> partition(numNodes, false); // Partition assignment
     bool hasImproved = true;
-    
 
-    if(partition.empty()){
+
+    if (partition.empty()) {
         partition.resize(G.num_of_nodes(), false); // Initial partition A
         // Initialize partition A and B based on node weights
         int totalWeight = calculateTotalWeight(G);
@@ -561,17 +230,17 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
 
     int maxIterations = numNodes / 2; // Maximum iterations as per the pseudocode
     int g_max = 1;
-    int i=0;
-    
+    int i = 0;
+
 
     do {
         std::vector<int> D(numNodes, 0); // Initialize D values
         std::vector<int> gv, av, bv;     // Lists to store gains and nodes
-        
+
 
         for (int n = 0; n < halfNumNodes; ++n) {
             // Compute D values for all nodes in A and B
-            computeInitialGains(G,partition,D);
+            computeInitialGains(G, partition, D);
 
             // Find a and b that maximize g = D[a] + D[b] - 2 * MatAdj[a][b]
             int bestA = -1, bestB = -1;
@@ -594,7 +263,7 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
             // Remove a and b from further consideration in this pass
             partition[bestA] = false;
             partition[bestB] = true;
-                
+
             // Update gv, av, and bv
             gv.push_back(bestG);
             av.push_back(bestA);
@@ -604,11 +273,12 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
             for (int i = 0; i < numNodes; ++i) {
                 if (partition[i]) {
                     D[i] -= 2 * G.getMatAdj()[bestA][i][1] - 2 * G.getMatAdj()[bestB][i][1];
-                } else {
+                }
+                else {
                     D[i] += 2 * G.getMatAdj()[bestA][i][1] - 2 * G.getMatAdj()[bestB][i][1];
                 }
             }
-            
+
         }
 
         // Find k which maximizes g_max, the sum of gv[1], ..., gv[k]
@@ -643,27 +313,265 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
         hasImproved = (prevPartition != partition);
         prevPartition = partition;
         i++;
-    
-    } while (g_max > 0 && hasImproved && i<maxIterations);
+
+    } while (g_max > 0 && hasImproved && i < maxIterations);
 
 
     // Remaining code for calculating balance and cut size...
     double weightA = 0.0;
-        double weightB = 0.0;
-        for (int i = 0; i < G.num_of_nodes(); i++) {
-            if (partition[i]) {
-                weightA += G.getNodeWeight(i);
-            }
-            else {
-                weightB += G.getNodeWeight(i);
-            }
+    double weightB = 0.0;
+    for (int i = 0; i < G.num_of_nodes(); i++) {
+        if (partition[i]) {
+            weightA += G.getNodeWeight(i);
         }
+        else {
+            weightB += G.getNodeWeight(i);
+        }
+    }
 
     std::cout << "Partition Balance Factor KL: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
     std::cout << "Cut size KL: " << calculateCutSize(G, partition) << std::endl;
 
     return partition;
 }
+
+//Recursive imeplementation of multilevel KL
+std::vector<bool> multilevel_KL(Graph& G) {
+
+    // Check if the graph is small enough to be partitioned using a sequential algorithm
+    // if (G.num_of_nodes() <= SEQUENTIAL_THRESHOLD) {
+    //     // G.printGraph();
+    //     return kernighanLin(G);
+    // }
+
+    // // Coarsen the graph
+    // Graph G1 = coarsening(G);
+
+    // // Recursively partition the coarser graph
+    // std::vector<bool> partition_coarse = multilevel_KL(G1);
+
+    // Uncoarsen the partitioning
+    // std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
+    // std::pair<int, int> ids;
+
+    // for (int i = 0; i < G1.num_of_nodes(); i++) {
+    //     ids = G1.getCoarseIdsById(i);
+    //     partition_uncoarse[ids.first] = partition_coarse[i];
+    //     partition_uncoarse[ids.second] = partition_coarse[i];
+    // }
+
+    // // Refine the partitioning using the Kernighan-Lin algorithm
+    // return kernighanLin(G);
+
+    std::vector<std::unordered_map<int, std::pair<int, int>>> coarsenG;
+
+    std::vector<bool> newPartition;
+    //coarsenG.push_back(G);
+    std::cout << "Coarsening" << std::endl;
+    coarsenG.push_back(coarsenGraph(G));
+    std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and " << G.num_of_edges() << " edges" << std::endl;
+    int i = 0;
+    while (coarsenG[i].size() > 50) {
+        std::cout << "Coarsening" << std::endl;
+        coarsenG.push_back(coarsenGraph(G));
+        std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and " << G.num_of_edges() << " edges" << std::endl;
+        i++;
+    }
+
+    //std::cout<<"Num nodes: "<<coarsenG.at(coarsenG.size() - 1).num_of_nodes()<<std::endl;
+    std::vector<bool> partition = kernighanLin1(G);
+
+    for (int i = coarsenG.size() - 1; i >= 0; i--) {
+
+        newPartition = uncoarsening2(coarsenG[i], partition);
+
+
+        // if(newPartition.size() < G.num_of_nodes()/2){
+        //     partition = kernighanLin1(coarsenG.at(i-1), newPartition);
+        // }
+        // else{
+        //     partition = newPartition;
+        // }
+        partition = newPartition;
+
+    }
+
+
+    return partition;
+
+}
+
+std::vector<bool> old_multilevel_KL(Graph& G) {
+    std::vector<Graph> coarsenG;
+
+    std::vector<bool> newPartition;
+    coarsenG.push_back(G);
+    int i = 0;
+    while (coarsenG[i].num_of_nodes() > SEQUENTIAL_THRESHOLD) {
+        coarsenG.push_back(coarsening(coarsenG.at(i)));
+        // coarsenG[i].printGraph();
+        i++;
+    }
+    std::vector<bool> partition = kernighanLin(coarsenG.at(coarsenG.size() - 1));
+
+    for (int i = coarsenG.size() - 2; i >= 0; i--) {
+        newPartition = uncoarsening(coarsenG.at(i + 1), partition, coarsenG.at(i).num_of_nodes());
+        partition = kernighanLin(coarsenG.at(i), newPartition);
+    }
+
+    return partition;
+}
+
+
+// Original Kernighan-Lin algorithm
+// std::vector<bool> kernighanLinOG(Graph& graph) {
+//     int sizeNodes = graph.num_of_nodes();
+//     int halfSize = sizeNodes / 2;
+
+//     auto partitionA = generateRandomBisection(graph); // Initial partition A
+//     std::cout << "Initial partition: " << std::endl;
+//     for (int i = 0; i < sizeNodes; ++i) {
+//         std::cout << partitionA[i] << " ";
+//     }
+//     std::cout << std::endl;
+
+//     std::vector<int> netGains(sizeNodes, 0); // Net gains for each node
+//     // Perform iterations until no further improvement can be made
+//     bool improved = true;
+//     while (improved) {
+//         improved = false;
+//         computeNetGains(graph, partitionA, netGains);
+
+//         for (int i = 0; i < halfSize; ++i) {
+//             int maxGainIdx = -1;
+//             int maxGain = 0;
+
+//             // Find the node in set A with the maximum net gain
+//             for (int j = 0; j < sizeNodes; ++j) {
+//                 if (!partitionA[j] && netGains[j] > maxGain) {
+//                     maxGainIdx = j;
+//                     maxGain = netGains[j];
+//                 }
+//             }
+
+//             int nodeToMove = maxGainIdx;
+//             partitionA[nodeToMove] = true;
+
+//             // Find the corresponding node in set B with the maximum net gain
+//             for (int j = 0; j < sizeNodes; ++j) {
+//                 if (partitionA[j] && netGains[j] > maxGain) {
+//                     maxGainIdx = j;
+//                     maxGain = netGains[j];
+//                 }
+//             }
+
+//             // Check if there is an improvement in cut size after the swap
+//             int cutBefore = calculateCutSize(graph, partitionA);
+//             partitionA[maxGainIdx] = false;
+//             int cutAfter = calculateCutSize(graph, partitionA);
+//             if (cutAfter < cutBefore) {
+//                 improved = true;
+//             } else {
+//                 partitionA[nodeToMove] = false;
+//             }
+//         }
+//     }
+//     return partitionA;
+// }
+
+// Kernighan-Lin algorithm
+// std::vector<bool> kernighanLin(Graph& graph) {
+//     // auto partitionA = generateRandomBisection(graph); // Initial partition A
+//     std::vector<bool> partitionA(graph.num_of_nodes(), false); // Initial partition A
+//     for (int i = 0; i < graph.num_of_nodes() / 2; ++i) {
+//         partitionA[i] = true;
+//     }
+//     std::vector<bool> lock(graph.num_of_nodes(), false); // Locks for each node (true if locked, false if unlocked
+//     std::vector<int> netGains(graph.num_of_nodes(), 0);  // Net gains for each node
+//     std::vector<std::vector<int>> g(graph.num_of_nodes(), std::vector<int>(graph.num_of_nodes(), 0));
+//     G_Max gMax;
+
+//     std::vector<G_Max> vecGMax;
+//     int maxGain = 0;
+
+//     bool hasImproved = true;
+//     std::vector<bool> prevPartition = partitionA;
+
+//     do {
+//         gMax.gMax = INT_MIN;
+//         computeNetGains(graph, partitionA, netGains);
+
+
+//         for (int k = 0; k < graph.num_of_nodes() / 2; k++) {
+
+//             for (int i = 0; i < graph.num_of_nodes(); i++) {
+//                 for (int j = i + 1; j < graph.num_of_nodes(); j++) {
+//                     //prova nodo unlocked
+//                     if (!lock[i] && !lock[j]) {
+//                         g[i][j] = netGains[i] + netGains[j] - 2 * graph.getMatAdj()[i][j][1];
+//                         if (g[i][j] > gMax.gMax) {
+//                             gMax.gMax = g[i][j];
+//                             gMax.i = i;
+//                             gMax.j = j;
+//                         }
+//                     }
+//                 }
+//             }
+
+//             vecGMax.push_back(gMax);
+
+//             lock[gMax.i] = true;
+//             lock[gMax.j] = true;
+
+//             for (int i = 0; i < graph.num_of_nodes(); i++) {
+//                 if (!lock[i]) {
+//                     if (!partitionA[i]) {
+//                         netGains[i] = netGains[i] + 2 * graph.getMatAdj()[i][gMax.i][1] - 2 * graph.getMatAdj()[i][gMax.j][1];
+//                     }
+//                     else {
+//                         netGains[i] = netGains[i] - 2 * graph.getMatAdj()[i][gMax.i][1] + 2 * graph.getMatAdj()[i][gMax.j][1];
+//                     }
+//                 }
+//             }
+//         }
+
+//         // Find k, such that Gk = Sum(Pi) gains[i] is maximized
+//         maxGain = INT_MIN;
+//         int maxGainIdx = 0;
+//         int sum = 0;
+//         for (int k = 0; k < vecGMax.size(); ++k) {
+//             // Calculate the sum of gains[0] to gains[k]
+
+//             for (int i = 0; i <= k; ++i) {
+//                 sum += vecGMax[i].gMax;
+//             }
+//             if (sum > maxGain) {
+//                 maxGain = sum;
+//                 maxGainIdx = k;
+//             }
+//         }
+
+//         if (maxGain > 0) {
+//             for (int i = 0; i <= maxGainIdx; i++) {
+//                 partitionA[vecGMax[i].i] = !partitionA[vecGMax[i].i];
+//                 partitionA[vecGMax[i].j] = !partitionA[vecGMax[i].j];
+//             }
+//         }
+
+//         // Clear the locks
+//         for (int i = 0; i < graph.num_of_nodes(); ++i) {
+//             lock[i] = false;
+//         }
+//         vecGMax.clear();
+
+//         // Check for improvement in the partition
+//         hasImproved = (prevPartition != partitionA);
+//         prevPartition = partitionA;
+
+//     } while (maxGain <= 0 && hasImproved);
+
+//     return partitionA;
+// }
 
 // TODO: fix edges (nodes are fine)
 // Graph uncoarsening(Graph G1) {
@@ -762,39 +670,6 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
 
 //     return G;
 // }
-
-std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize) {
-    std::vector<bool> uncoarsenPartition(graphSize, false);
-    for (int i = 0; i < G1.num_of_nodes(); i++) {
-        auto ids = G1.getCoarseIdsById(i);
-        uncoarsenPartition[ids.first] = partition[i];
-        uncoarsenPartition[ids.second] = partition[i];
-    }
-    return uncoarsenPartition;
-}
-
-std::vector<bool> uncoarsening2(std::unordered_map<int , std::pair<int,int>> coarse,  std::vector<bool> partition) {
-    
-    int num = 0;
-
-    for(auto node: coarse){
-        if(node.second.first != node.second.second){
-            num+=2;
-        }
-        else{
-            num++;
-        }
-    }
-
-    std::vector<bool> uncoarsenPartition(num,false);
-
-    for(auto node: coarse){
-        uncoarsenPartition[node.second.first] = partition[node.first];
-        uncoarsenPartition[node.second.second] = partition[node.first];
-    }
-
-    return uncoarsenPartition;
-}
 
 
 // Graph uncoarsening(Graph G1) {
@@ -922,195 +797,3 @@ std::vector<bool> uncoarsening2(std::unordered_map<int , std::pair<int,int>> coa
 
 //     return partition_uncoarse;
 // }
-
-std::unordered_map<int , std::pair<int,int>> coarsenGraph(Graph& G) {
-    // Create a new graph to represent the coarser version
-
-    Graph G1;
-    std::map<int, Node> nodes = G.getNodes();
-
-    std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
-    std::unordered_map<int , std::pair<int,int>> coarseNodes;
- 
-    auto matAdj = G.getMatAdj();
-
-    for (auto& edge : M) {
-        Coarse* coarse = new Coarse;
-        coarse->n1 = edge.first;
-        coarse->n2 = edge.second;
-        coarse->weight1 = nodes.find(edge.first)->second.weight;
-        coarse->weight2 = nodes.find(edge.second)->second.weight;
-        coarse->adj.push_back(matAdj[edge.first]);
-        coarse->adj.push_back(matAdj[edge.second]);
-        G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
-        coarseNodes.insert({G1.returnLastID()-1, {edge.first,edge.second }});
-        delete coarse;
-    }
-
-    // Process the unmatched nodes
-    for (const auto& nodePair : nodes) {
-        int nodeId = nodePair.first;
-        Node& node = nodes[nodeId];
-        // Check if the node is not part of any matching pair
-        bool isMatched = false;
-        for (const auto& edgePair : M) {
-            if (edgePair.first == nodeId || edgePair.second == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        // If the node is not matched, add it to G1 with nullptr for Coarse pointer
-        if (!isMatched) {
-            Coarse* coarse = new Coarse;
-            coarse->n1 = nodeId;
-            coarse->n2 = nodeId;
-            coarse->weight1 = nodes[nodeId].weight;
-            coarse->weight2 = nodes[nodeId].weight;
-            coarse->adj.push_back(matAdj[nodeId]);
-            G1.setNode(G1.returnLastID(), node.weight, coarse);
-            coarseNodes.insert({G1.returnLastID()-1, {nodeId,nodeId }});
-            delete coarse;
-        }
-    }
-
-    std::map<int, Node> newNodes = G1.getNodes();
-    std::set<std::pair<int, int>> addedEdges;
-
-    // settare edge del nuovo grafo
-    for (auto& edge : M) {
-        for (int i = 0; i < G.num_of_nodes(); i++) {
-            if (i == edge.first || i == edge.second) {
-                continue;
-            }
-            if (matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
-                // dobbiamo unire edge del nodo trovato con il nodo dato dai 2 uniti
-                // cerco quindi l'id del nodo nuovo in G1 tramite gli id dei nodi che l'hanno formato
-                // forse potremmo fare una map per rendere la ricerca costante e non sequenziale
-                int id1 = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.first);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-        }
-    }
-
-    // Remove nodes that are not part of any edge
-    // std::vector<int> nodesToRemove;
-    // for (const auto& nodePair : newNodes) {
-    //     int nodeId = nodePair.first;
-    //     bool isMatched = false;
-    //     for (const auto& edgePair : addedEdges) {
-    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
-    //             isMatched = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!isMatched) {
-    //         nodesToRemove.push_back(nodeId);
-    //     }
-    // }
-    // for (const auto& nodeId : nodesToRemove) {
-    //     G1.removeNode(nodeId);
-    // }
-
-    G1.setSizeNodes(G1.getNodes().size());
-    G1.setSizeEdges(G1.getEdges().size());
-    G1.computeAdjacencyMatrix();
-    // G1.computeMatrixDegree();
-    G = G1;
-    return coarseNodes;
-}
-
-//Recursive imeplementation of multilevel KL
-std::vector<bool> multilevel_KL(Graph& G) {
-
-    // Check if the graph is small enough to be partitioned using a sequential algorithm
-    // if (G.num_of_nodes() <= SEQUENTIAL_THRESHOLD) {
-    //     // G.printGraph();
-    //     return kernighanLin(G);
-    // }
-
-    // // Coarsen the graph
-    // Graph G1 = coarsening(G);
-
-    // // Recursively partition the coarser graph
-    // std::vector<bool> partition_coarse = multilevel_KL(G1);
-
-    // Uncoarsen the partitioning
-    // std::vector<bool> partition_uncoarse(G.num_of_nodes(), false);
-    // std::pair<int, int> ids;
-
-    // for (int i = 0; i < G1.num_of_nodes(); i++) {
-    //     ids = G1.getCoarseIdsById(i);
-    //     partition_uncoarse[ids.first] = partition_coarse[i];
-    //     partition_uncoarse[ids.second] = partition_coarse[i];
-    // }
-
-    // // Refine the partitioning using the Kernighan-Lin algorithm
-    // return kernighanLin(G);
-
-    std::vector<std::unordered_map<int , std::pair<int,int>>> coarsenG;
-
-    std::vector<bool> newPartition;
-    //coarsenG.push_back(G);
-    std::cout << "Coarsening" << std::endl;
-    coarsenG.push_back(coarsenGraph(G));
-    std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and "<< G.num_of_edges() <<" edges" << std::endl;
-    int i = 0;
-    while (coarsenG[i].size() > 10) {
-        std::cout << "Coarsening" << std::endl;
-        coarsenG.push_back(coarsenGraph(G));
-        std::cout << "Fine Coarsening con " << G.num_of_nodes() << " nodes and "<< G.num_of_edges() <<" edges" << std::endl;
-        i++;
-    }
-
-    //std::cout<<"Num nodes: "<<coarsenG.at(coarsenG.size() - 1).num_of_nodes()<<std::endl;
-    std::vector<bool> partition = kernighanLin1(G);
-
-    for (int i = coarsenG.size() - 1; i >= 0; i--) {
-       
-        newPartition = uncoarsening2(coarsenG[i], partition);
-
-        
-        // if(newPartition.size() < G.num_of_nodes()/2){
-        //     partition = kernighanLin1(coarsenG.at(i-1), newPartition);
-        // }
-        // else{
-        //     partition = newPartition;
-        // }
-        partition = newPartition;
-        
-    }
-    
-
-    return partition;
-
-}
-
-
-
-
