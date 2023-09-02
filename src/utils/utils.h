@@ -30,5 +30,6 @@ Graph coarsening(Graph& G);
 std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G);
 std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
 std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coarse, std::vector<bool> partition);
+void savePartitionDataToFile(const std::vector<std::vector<bool>>& partitions, const std::vector<double> execTimes, const std::vector<double>& balanceFactors, const std::vector<int>& cutSizes, const std::string& filename);
 
 #endif

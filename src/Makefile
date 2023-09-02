@@ -18,4 +18,4 @@ clean:
 generate_graph:
 	g++ -std=c++20 Generator/graph_generator.cpp -o graph_generator
 	./graph_generator $(n) $(e)
-	rm -rf graph_generator
+	rm -rf ./Generator/graph_generator

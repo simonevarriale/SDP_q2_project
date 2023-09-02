@@ -288,6 +288,8 @@ void read_input2(const std::string& filename, Graph* G) {
         }
     }
 
+    G->computeAdjacencyMatrix();
+
     inputFile.close();
 }
 
@@ -587,4 +589,23 @@ std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coa
     }
 
     return uncoarsenPartition;
+}
+
+void savePartitionDataToFile(const std::vector<std::vector<bool>>& partitions, const std::vector<double> execTimes, const std::vector<double>& balanceFactors, const std::vector<int>& cutSizes, const std::string& filename) {
+    std::ofstream outputFile(filename);
+    if (outputFile.is_open()) {
+        outputFile << "Execution time graph reading: " << execTimes[0] << " seconds" << std::endl << std::endl;
+        outputFile << "Execution time partitioning: " << execTimes[1] << " seconds" << std::endl << std::endl;
+        for (size_t i = 0; i < partitions.size(); i++) {
+            if (partitions[i].size() > 0) {
+                outputFile << "Partition " << i + 1 << ": ";
+                for (auto j : partitions[i]) {
+                    outputFile << j << " ";
+                }
+                outputFile << std::endl;
+                outputFile << "Balance Factor: " << balanceFactors[i] << " | Cut Size: " << cutSizes[i] << std::endl << std::endl;
+            }
+        }
+        outputFile.close();
+    }
 }
