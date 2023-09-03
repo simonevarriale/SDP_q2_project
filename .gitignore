@@ -2,3 +2,4 @@
 **.vscode
 **.xcodeproj
 main
+graph_partitioner

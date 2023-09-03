@@ -47,7 +47,7 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
         partitions = Parallel_pMLRSB(G, numPartitions, numThreads);
     }
     else if (chosenAlgorithm == "KL") {
-        partitions[0] = kernighanLin(G);
+        partitions[0] = kernighanLin1(G,partitions[0]);
     }
     else if (chosenAlgorithm == "FM") {
         partitions[0] = fiducciaMattheyses2(G, 10);
@@ -74,8 +74,8 @@ int main(int argc, char** argv) {
     Graph G;
 
     int i = 0, numPartitions = 2, numThreads = 2;
-    std::string algorithmName = "pMLRSB";
-    std::string inputGraphFile = "./data/graph_50_50.txt";
+    std::string algorithmName = "KL";
+    std::string inputGraphFile = "./data/graph_75_150.txt";
     std::vector<double> balanceFactors;
     std::vector<int> cutSizes;
 

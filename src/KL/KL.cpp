@@ -237,10 +237,10 @@ std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition = {}) {
         std::vector<int> D(numNodes, 0); // Initialize D values
         std::vector<int> gv, av, bv;     // Lists to store gains and nodes
 
-
+        computeInitialGains(G, partition, D);
         for (int n = 0; n < halfNumNodes; ++n) {
             // Compute D values for all nodes in A and B
-            computeInitialGains(G, partition, D);
+            
 
             // Find a and b that maximize g = D[a] + D[b] - 2 * MatAdj[a][b]
             int bestA = -1, bestB = -1;
