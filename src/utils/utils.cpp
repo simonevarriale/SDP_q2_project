@@ -591,21 +591,46 @@ std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coa
     return uncoarsenPartition;
 }
 
-void savePartitionDataToFile(const std::vector<std::vector<bool>>& partitions, const std::vector<double> execTimes, const std::vector<double>& balanceFactors, const std::vector<int>& cutSizes, const std::string& filename) {
-    std::ofstream outputFile(filename);
+void savePartitionDataToFile(const PartitionData& partitionData) {
+    std::ofstream outputFile(partitionData.fileName);
     if (outputFile.is_open()) {
-        outputFile << "Execution time graph reading: " << execTimes[0] << " seconds" << std::endl << std::endl;
-        outputFile << "Execution time partitioning: " << execTimes[1] << " seconds" << std::endl << std::endl;
-        for (size_t i = 0; i < partitions.size(); i++) {
-            if (partitions[i].size() > 0) {
+        outputFile << "Execution time graph reading: " << partitionData.executionTimes[0] << " seconds" << std::endl;
+        outputFile << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl << std::endl;
+        outputFile << "Execution time partitioning: " << partitionData.executionTimes[1] << " seconds" << std::endl << std::endl;
+        for (size_t i = 0; i < partitionData.partitions.size(); i++) {
+            if (partitionData.partitions[i].size() > 0) {
                 outputFile << "Partition " << i + 1 << ": ";
-                for (auto j : partitions[i]) {
+                for (auto j : partitionData.partitions[i]) {
                     outputFile << j << " ";
                 }
                 outputFile << std::endl;
-                outputFile << "Balance Factor: " << balanceFactors[i] << " | Cut Size: " << cutSizes[i] << std::endl << std::endl;
+                outputFile << "Balance Factor: " << partitionData.balanceFactors[i] << " | Cut Size: " << partitionData.cutSizes[i] << std::endl << std::endl;
             }
         }
+        outputFile << "Average Balance Factor: " << partitionData.averageBalanceFactor << std::endl;
+        outputFile << "Average Cut Size: " << partitionData.averageCutSize << std::endl;
+        outputFile << "Cut Size Between Partitions: " << partitionData.cutSizePartitions << std::endl;
+        outputFile << "CPU time used: " << partitionData.usage.ru_utime.tv_sec << " seconds " << partitionData.usage.ru_utime.tv_usec << " microseconds" << std::endl;
+        outputFile << "Memory usage: " << partitionData.usage.ru_maxrss << " kilobytes | " << partitionData.usage.ru_maxrss / 1024.0 << " MBs | " << partitionData.usage.ru_maxrss / (1024.0 * 1024.0) << " GBs" << std::endl;
+        // outputFile << "Memory usage: " << partitionData.usage.ru_maxrss / 1000000.0 << " GBs" << std::endl;
+        // outputFile << "Memory usage: " << partitionData.usage.ru_maxrss / (1024.0 * 1024.0 * 1024.0) << " GBs" << std::endl;
+        outputFile << "CPU percentage: " << partitionData.cpu_percentage << "%" << std::endl;
         outputFile.close();
     }
+}
+
+double calculateAverageBalanceFactor(const std::vector<double>& balanceFactors) {
+    double sum = 0.0;
+    for (double balanceFactor : balanceFactors) {
+        sum += balanceFactor;
+    }
+    return sum / balanceFactors.size();
+}
+
+double calculateAverageCutSize(const std::vector<int>& cutSizes) {
+    double sum = 0.0;
+    for (int cutSize : cutSizes) {
+        sum += cutSize;
+    }
+    return sum / cutSizes.size();
 }

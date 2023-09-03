@@ -13,6 +13,20 @@
 #include <set>
 #include <utility>
 
+struct PartitionData {
+    std::vector<std::vector<bool>> partitions;
+    std::vector<double> executionTimes;
+    std::vector<double> balanceFactors;
+    double averageBalanceFactor;
+    std::vector<int> cutSizes;
+    int cutSizePartitions;
+    double averageCutSize;
+    int totalEdgesWeight;
+    struct rusage usage;
+    std::string fileName;
+    double cpu_percentage;
+};
+
 double computeMedian(const Eigen::VectorXd& vector);
 double parallel_computeMedian(const Eigen::VectorXd& vector);
 double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA);
@@ -30,6 +44,8 @@ Graph coarsening(Graph& G);
 std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G);
 std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
 std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coarse, std::vector<bool> partition);
-void savePartitionDataToFile(const std::vector<std::vector<bool>>& partitions, const std::vector<double> execTimes, const std::vector<double>& balanceFactors, const std::vector<int>& cutSizes, const std::string& filename);
+void savePartitionDataToFile(const PartitionData& partitionData);
+double calculateAverageBalanceFactor(const std::vector<double>& balanceFactors);
+double calculateAverageCutSize(const std::vector<int>& cutSizes);
 
 #endif

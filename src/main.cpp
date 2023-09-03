@@ -6,21 +6,22 @@
 #include "./RSB/Parallel_RSB.h"
 #include <iostream>
 #include <vector>
-
 #include <chrono>
+#include <sys/resource.h>
 
 extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
 extern std::vector<bool> multilevel_KL(Graph& graph);
 extern std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vector<bool> partitionA = {});
 extern std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition);
 
-std::vector<double> executionTimes;
+PartitionData partitionData;
 
 std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgorithm, int numPartitions, int numThreads) {
     std::vector<std::vector<bool>> partitions;
     partitions.resize(numPartitions);
+    struct rusage usage1;
     int i = 0;
-
+    getrusage(RUSAGE_SELF, &usage1);
     auto startTime = std::chrono::high_resolution_clock::now();
     if (chosenAlgorithm == "RSB") {
         partitions[0] = RSB(G, numPartitions);
@@ -47,7 +48,7 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
         partitions = Parallel_pMLRSB(G, numPartitions, numThreads);
     }
     else if (chosenAlgorithm == "KL") {
-        partitions[0] = kernighanLin1(G,partitions[0]);
+        partitions[0] = kernighanLin1(G, partitions[0]);
     }
     else if (chosenAlgorithm == "FM") {
         partitions[0] = fiducciaMattheyses2(G, 10);
@@ -55,17 +56,16 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
     else {
         std::cout << "Invalid algorithm name" << std::endl;
     }
-
     auto endTime = std::chrono::high_resolution_clock::now();
+    getrusage(RUSAGE_SELF, &partitionData.usage);
     std::chrono::duration<double> execTimeAlgorithm = endTime - startTime;
+    double elapsed = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() / 1000000.0;
+    double cpu = (partitionData.usage.ru_utime.tv_sec - usage1.ru_utime.tv_sec) + (partitionData.usage.ru_utime.tv_usec - usage1.ru_utime.tv_usec) / 1000000.0;
+    partitionData.cpu_percentage = 100.0 * cpu / elapsed;
     std::cout << "Execution time " << chosenAlgorithm << ": " << execTimeAlgorithm.count() << " seconds" << std::endl;
-    executionTimes.push_back(execTimeAlgorithm.count());
-
-    // if (partitions.size() > 1) {
-    //     if (partitions[1].size() > 0) {
-    //         std::cout << "Cut size between partitions: " << calculateCutSizePartitions(G, partitions) << std::endl;
-    //     }
-    // }
+    std::cout << "CPU percentage used: " << partitionData.cpu_percentage << "%" << std::endl;
+    std::cout << "Memory usage: " << partitionData.usage.ru_maxrss / (1024.0 * 1024.0) << " GBs" << std::endl;
+    partitionData.executionTimes.push_back(execTimeAlgorithm.count());
 
     return partitions;
 }
@@ -73,11 +73,8 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
 int main(int argc, char** argv) {
     Graph G;
 
-    int i = 0, numPartitions = 2, numThreads = 2;
-    std::string algorithmName = "KL";
-    std::string inputGraphFile = "./data/graph_75_150.txt";
-    std::vector<double> balanceFactors;
-    std::vector<int> cutSizes;
+    int i = 0, numPartitions = 1, numThreads = 1;
+    std::string algorithmName = "MLRSB", inputGraphFile = "./data/graph_500_1024.txt";
 
     if (argc > 1) {
         inputGraphFile = argv[1];
@@ -92,25 +89,24 @@ int main(int argc, char** argv) {
         numThreads = std::atoi(argv[4]);
     }
 
-    /////////////////////////////////////////////////////GRAPH READ//////////////////////////////////////////////
+    // Read the graph from the input file
     auto startTime = std::chrono::high_resolution_clock::now();
     read_input(inputGraphFile, &G);
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> execTimeRead = endTime - startTime;
+    partitionData.totalEdgesWeight = G.getTotalEdgesWeight();
+    std::cout << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl;
     std::cout << "Execution time graph reading: " << execTimeRead.count() << " seconds" << std::endl << std::endl;
-    executionTimes.push_back(execTimeRead.count());
-    // std::cout << "Num of nodes: " << G.num_of_nodes() << " and Num of Edges: " << G.num_of_edges() << std::endl;
-    // G1 = G;
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    partitionData.executionTimes.push_back(execTimeRead.count());
 
-    auto partitions = algorithmsRunner(G, algorithmName, numPartitions, numThreads);
+    partitionData.partitions = algorithmsRunner(G, algorithmName, numPartitions, numThreads);
 
     // Print the partitioning result
-    std::cout << std::endl << "Partitioning result:" << std::endl;
-    for (auto v : partitions) {
+    std::cout << std::endl << "Partitioning result on graph '" << inputGraphFile << "'" << std::endl;
+    for (auto v : partitionData.partitions) {
         if (v.size() > 0) {
             i++;
-            if (partitions.size() > 1) {
+            if (partitionData.partitions.size() > 1) {
                 std::cout << "Partition " << i << ": ";
             }
             else {
@@ -121,12 +117,16 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl;
             std::cout << "Balance Factor: " << calculateBalanceFactor(G, v) << " | Cut Size: " << calculateCutSize(G, v) << std::endl << std::endl;
-            balanceFactors.push_back(calculateBalanceFactor(G, v));
-            cutSizes.push_back(calculateCutSize(G, v));
+            partitionData.balanceFactors.push_back(calculateBalanceFactor(G, v));
+            partitionData.cutSizes.push_back(calculateCutSize(G, v));
         }
     }
+    partitionData.averageBalanceFactor = calculateAverageBalanceFactor(partitionData.balanceFactors);
+    partitionData.averageCutSize = calculateAverageCutSize(partitionData.cutSizes);
+    // partitionData.cutSizePartitions = calculateCutSizePartitions(G, partitionData.partitions);
+    partitionData.fileName = "./results/graph_" + std::to_string(G.num_of_nodes()) + "_" + std::to_string(G.num_of_edges()) + "_" + algorithmName + "_" + std::to_string(numPartitions) + "_" + std::to_string(numThreads) + ".txt";
 
-    savePartitionDataToFile(partitions, executionTimes, balanceFactors, cutSizes, inputGraphFile + "_" + algorithmName + "_" + std::to_string(numPartitions) + "_" + std::to_string(numThreads) + "_results.txt");
+    savePartitionDataToFile(partitionData);
 
     return 0;
 }

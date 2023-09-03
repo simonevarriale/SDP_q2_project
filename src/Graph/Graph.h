@@ -46,15 +46,6 @@ private:
 
 public:
     Graph(int numNodes = 0, int numEdges = 0) : sizeN(numNodes), sizeE(numEdges) {}
-    // ~Graph() {
-    //     // Free memory allocated for coarse nodes
-    //     for (auto& node : Nodes) {
-    //         if (node.second.coarse != nullptr) {
-    //             delete node.second.coarse;
-    //             node.second.coarse = nullptr;
-    //         }
-    //     }
-    // }
     void removeNode(int nodeId);
     int num_of_nodes() { return sizeN; }
     int num_of_edges() { return sizeE; }
@@ -81,25 +72,13 @@ public:
     void setEdge(int n1, int n2, int weight);
 
     void computeAdjacencyMatrix();
-    void setAdjacencyMatrix();
-    void setAdjacencyMatrixValue(int i, int j, int value, int weight = 1);
 
-    double getTotalNodeWeight() {
-        double totalWeight = 0.0;
-
-        for (int i = 0; i < sizeN; i++) {
-            totalWeight += this->getNodeWeight(i);
-        }
-
-        return totalWeight;
-    }
-
+    int getTotalEdgesWeight();
 
     void computeMatrixDegree();
     void incrementDegree(int idNode);
 
     int returnLastID() { return Nodes.size(); }
-    void setCoarse(int n1, int n2, int weight1, int weight2);
     int findNodeIdByCoarseIds(int n1, int n2);
     int findNodeIdByCoarseSingleId(int n);
     std::pair<int, int> getCoarseIdsById(int nodeId);
