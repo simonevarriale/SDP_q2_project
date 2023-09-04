@@ -221,3 +221,11 @@ int Graph::getTotalEdgesWeight() {
     }
     return totalWeight;
 }
+
+int Graph::getTotalNodesWeight() {
+    int totalWeight = 0;
+    for (const auto& [id, node] : Nodes) {
+        totalWeight += node.weight;
+    }
+    return totalWeight;
+}

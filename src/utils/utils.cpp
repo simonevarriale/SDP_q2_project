@@ -264,36 +264,6 @@ void read_input(const std::string& filename, Graph* G) {
     inputFile.close();
 }
 
-void read_input2(const std::string& filename, Graph* G) {
-    std::ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        std::cout << "Failed to open the file: " << filename << std::endl;
-        return;
-    }
-
-    int numNodes, numEdges;
-    inputFile >> numNodes >> numEdges;
-
-    G->setSizeNodes(numNodes);
-    G->setSizeEdges(numEdges);
-
-    for (int i = 0; i < numNodes; i++) {
-        G->setNode(i, 1);
-        std::string line;
-        std::getline(inputFile, line);
-        std::istringstream iss(line);
-        int adjacentNodeId;
-        while (iss >> adjacentNodeId) {
-            G->setEdge(i, adjacentNodeId - 1, 1);
-        }
-    }
-
-    G->computeAdjacencyMatrix();
-
-    inputFile.close();
-}
-
-
 std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
     std::vector<std::pair<int, int>> M;
     std::vector<bool> visited(G.num_of_nodes(), false);
@@ -306,7 +276,6 @@ std::vector<std::pair<int, int>> heavyEdgeMatching(Graph G) {
     for (auto& edge : edges) {
         if (!visited[edge.n1] && !visited[edge.n2]) {
             M.push_back(std::make_pair(edge.n1, edge.n2));
-            //std::cout<<"M: ("<<edge.n1<<","<<edge.n2<<")"<<std::endl;
             visited[edge.n1] = true;
             visited[edge.n2] = true;
         }
@@ -406,29 +375,9 @@ Graph coarsening(Graph& G) {
         }
     }
 
-    // Remove nodes that are not part of any edge
-    // std::vector<int> nodesToRemove;
-    // for (const auto& nodePair : newNodes) {
-    //     int nodeId = nodePair.first;
-    //     bool isMatched = false;
-    //     for (const auto& edgePair : addedEdges) {
-    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
-    //             isMatched = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!isMatched) {
-    //         nodesToRemove.push_back(nodeId);
-    //     }
-    // }
-    // for (const auto& nodeId : nodesToRemove) {
-    //     G1.removeNode(nodeId);
-    // }
-
     G1.setSizeNodes(G1.getNodes().size());
     G1.setSizeEdges(G1.getEdges().size());
     G1.computeAdjacencyMatrix();
-    // G1.computeMatrixDegree();
 
     return G1;
 }
@@ -529,31 +478,9 @@ std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G) {
         }
     }
 
-    // Remove nodes that are not part of any edge
-    // std::vector<int> nodesToRemove;
-    // for (const auto& nodePair : newNodes) {
-    //     int nodeId = nodePair.first;
-    //     bool isMatched = false;
-    //     for (const auto& edgePair : addedEdges) {
-    //         if (edgePair.first == nodeId || edgePair.second == nodeId) {
-    //             isMatched = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!isMatched) {
-    //         nodesToRemove.push_back(nodeId);
-    //     }
-    // }
-    // std::cout << "Nodes to remove: " << nodesToRemove.size() << std::endl;
-    // for (const auto& nodeId : nodesToRemove) {
-    //     std::cout << "Removing node " << nodeId << std::endl;
-    //     G1.removeNode(nodeId);
-    // }
-
     G1.setSizeNodes(G1.getNodes().size());
     G1.setSizeEdges(G1.getEdges().size());
     G1.computeAdjacencyMatrix();
-    // G1.computeMatrixDegree();
     G = G1;
     return coarseNodes;
 }
@@ -595,6 +522,7 @@ void savePartitionDataToFile(const PartitionData& partitionData) {
     std::ofstream outputFile(partitionData.fileName);
     if (outputFile.is_open()) {
         outputFile << "Execution time graph reading: " << partitionData.executionTimes[0] << " seconds" << std::endl;
+        outputFile << "Total nodes weight: " << partitionData.totalNodesWeight << std::endl;
         outputFile << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl << std::endl;
         outputFile << "Execution time partitioning: " << partitionData.executionTimes[1] << " seconds" << std::endl << std::endl;
         for (size_t i = 0; i < partitionData.partitions.size(); i++) {
@@ -612,8 +540,6 @@ void savePartitionDataToFile(const PartitionData& partitionData) {
         outputFile << "Cut Size Between Partitions: " << partitionData.cutSizePartitions << std::endl;
         outputFile << "CPU time used: " << partitionData.usage.ru_utime.tv_sec << " seconds " << partitionData.usage.ru_utime.tv_usec << " microseconds" << std::endl;
         outputFile << "Memory usage: " << partitionData.usage.ru_maxrss << " kilobytes | " << partitionData.usage.ru_maxrss / 1024.0 << " MBs | " << partitionData.usage.ru_maxrss / (1024.0 * 1024.0) << " GBs" << std::endl;
-        // outputFile << "Memory usage: " << partitionData.usage.ru_maxrss / 1000000.0 << " GBs" << std::endl;
-        // outputFile << "Memory usage: " << partitionData.usage.ru_maxrss / (1024.0 * 1024.0 * 1024.0) << " GBs" << std::endl;
         outputFile << "CPU percentage: " << partitionData.cpu_percentage << "%" << std::endl;
         outputFile.close();
     }

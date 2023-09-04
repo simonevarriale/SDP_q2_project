@@ -22,6 +22,7 @@ struct PartitionData {
     int cutSizePartitions;
     double averageCutSize;
     int totalEdgesWeight;
+    int totalNodesWeight;
     struct rusage usage;
     std::string fileName;
     double cpu_percentage;
@@ -39,7 +40,6 @@ int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 int calculateCutSizePartitions(Graph& G, const std::vector<std::vector<bool>>& partitions);
 std::vector<int> sortIndices(const Eigen::VectorXd& vec);
 void read_input(const std::string& filename, Graph* G);
-void read_input2(const std::string& filename, Graph* G);
 Graph coarsening(Graph& G);
 std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G);
 std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);

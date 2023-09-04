@@ -81,9 +81,6 @@ std::vector<bool> Parallel_RSB(Graph& G, int numThreads) {
             thread.join();
         }
 
-        // std::cout << "Partition Balance Factor MLRSB: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
-        // std::cout << "Cut size MLRSB: " << calculateCutSize(G, partition) << std::endl;
-
         return partition;
     }
     else {

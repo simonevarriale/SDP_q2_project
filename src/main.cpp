@@ -9,11 +9,6 @@
 #include <chrono>
 #include <sys/resource.h>
 
-extern std::vector<bool> kernighanLin(Graph& graph, std::vector<bool> partitionA = {});
-extern std::vector<bool> multilevel_KL(Graph& graph);
-extern std::vector<bool> fiducciaMattheyses2(Graph& graph, int maxIterations, std::vector<bool> partitionA = {});
-extern std::vector<bool> kernighanLin1(Graph& G, std::vector<bool> partition);
-
 PartitionData partitionData;
 
 std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgorithm, int numPartitions, int numThreads) {
@@ -46,12 +41,6 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
     }
     else if (chosenAlgorithm == "Parallel_pMLRSB") {
         partitions = Parallel_pMLRSB(G, numPartitions, numThreads);
-    }
-    else if (chosenAlgorithm == "KL") {
-        partitions[0] = kernighanLin1(G, partitions[0]);
-    }
-    else if (chosenAlgorithm == "FM") {
-        partitions[0] = fiducciaMattheyses2(G, 10);
     }
     else {
         std::cout << "Invalid algorithm name" << std::endl;
@@ -95,6 +84,7 @@ int main(int argc, char** argv) {
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> execTimeRead = endTime - startTime;
     partitionData.totalEdgesWeight = G.getTotalEdgesWeight();
+    partitionData.totalNodesWeight = G.getTotalNodesWeight();
     std::cout << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl;
     std::cout << "Execution time graph reading: " << execTimeRead.count() << " seconds" << std::endl << std::endl;
     partitionData.executionTimes.push_back(execTimeRead.count());
@@ -123,7 +113,6 @@ int main(int argc, char** argv) {
     }
     partitionData.averageBalanceFactor = calculateAverageBalanceFactor(partitionData.balanceFactors);
     partitionData.averageCutSize = calculateAverageCutSize(partitionData.cutSizes);
-    // partitionData.cutSizePartitions = calculateCutSizePartitions(G, partitionData.partitions);
     partitionData.fileName = "./results/graph_" + std::to_string(G.num_of_nodes()) + "_" + std::to_string(G.num_of_edges()) + "_" + algorithmName + "_" + std::to_string(numPartitions) + "_" + std::to_string(numThreads) + ".txt";
 
     savePartitionDataToFile(partitionData);

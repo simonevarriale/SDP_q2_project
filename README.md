@@ -1,1 +1,130 @@
-# SDP_q2_project
+# Graph Partitioning
+
+<!-- ABOUT THE PROJECT -->
+
+## About The Project
+
+TODO
+
+<!-- GETTING STARTED -->
+
+## Getting Started
+
+The commands to run the entire project are in `Makefile` file.
+
+### Installation
+
+There are three fundamental commands:
+
+1. Delete previous object files
+
+```sh
+make clean
+```
+
+2. Compile code
+
+```sh
+make compile
+```
+
+3. Launch program
+
+```sh
+./graph_partitioner input_file algorithm_name partitions_number threads_number
+```
+
+4. Create graph file
+
+```sh
+./graph_generator nodes_number edges_number
+```
+
+#### Input file
+
+- ./data/graph_50_128.txt
+- ./data/graph_100_256.txt
+- ./data/graph_250_640.txt
+- ./data/graph_500_1024.txt
+
+#### Algorithm name
+
+- MLRSB: Sequential MLRSB
+- pMLRSB: Sequential pMLRSB
+- Parallel_MLRSB: Parallel MLRSB
+- Parallel_pMLRSB: Parallel pMLRSB
+- RSB: Sequential RSB
+- pRSB: Sequential pRSB
+- Parallel_RSB: Parallel RSB
+- Parallel_pRSB: Parallel pRSB
+
+## Usage
+
+```sh
+ ./graph_partitioner  ./data/graph_50_128.txt MLRSB # Sequential MLRSB
+
+./graph_partitioner  ./data/graph_50_128.txt pMLRSB 4 # pMLRSB with 4 partitions
+
+./graph_partitioner  ./data/graph_50_128.txt Parallel_pMLRSB 4 4 # Parallel pMLRSB with 4 partitions and 4 threads
+```
+
+<!-- Folders' Content -->
+
+## Folders' Content
+
+There are three main folders.
+
+### RSB
+
+It contains all the functions related to RSB and MLRSB algorithm.
+
+- MLRSB.c
+- Parallel_MLRSB.c
+- RSB.c
+- Parallel_RSB.c
+- MLRSB.h
+- Parallel_MLRSB.h
+- RSB.h
+- Parallel_RSB.h
+
+### utils
+
+It contains all utility functions.
+
+- utils.c
+- utils.h
+
+### Graph
+
+It contains both functions related to graphs.
+
+- Graph.c
+- Graph.h
+
+<!-- Files' Content -->
+
+## Files' Content
+
+#### MLRSB.c
+
+TODO
+
+#### Parallel_MLRSB.c
+
+TODO
+
+#### RSB.c
+
+TODO
+
+#### Parallel_RSB.c
+
+TODO
+
+#### utils.c
+
+TODO
+
+#### Graph.c
+
+TODO

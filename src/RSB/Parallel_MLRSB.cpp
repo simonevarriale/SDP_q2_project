@@ -5,7 +5,6 @@ std::mutex mutex;
 bool parallel_hasImproved = true;
 
 Eigen::VectorXd parallel_interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNodes, int numThreads) {
-    // std::cout << "parallel_interpolate" << std::endl;
     Eigen::VectorXd fv(sizeNodes);
 
     int sum = 0;
@@ -85,14 +84,11 @@ Eigen::VectorXd parallel_fiedler(Graph& G, int numThreads) {
         Graph G1 = coarsening(G);
         if (G1.num_of_nodes() == G.num_of_nodes() - 1)
             parallel_hasImproved = false;
-        // std::cout << "Fine Coarsening con " << G1.num_of_nodes() << " nodes." << std::endl;
         fv1 = parallel_fiedler(G1, numThreads);
         fv = parallel_interpolate(fv1, L, sizeNodes, numThreads);
         fv = rqi(fv, L, sizeNodes);
-        // std::cout << "Fine parallel_rqi" << std::endl;
     }
     else {
-        // std::cout << "Laplacian matrix:" << std::endl;
         Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
 
         if (eigenSolver.info() == Eigen::Success) {
@@ -149,9 +145,6 @@ std::vector<bool> Parallel_MLRSB(Graph& G, int numThreads) {
             weightB += G.getNodeWeight(i);
         }
     }
-
-    // std::cout << "Partition Balance Factor MLRSB: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
-    // std::cout << "Cut size MLRSB: " << calculateCutSize(G, partition) << std::endl;
 
     return partition;
 }

@@ -40,7 +40,6 @@ int main(int argc, char** argv) {
     auto now = chrono::system_clock::now();
     auto now_c = chrono::system_clock::to_time_t(now);
     ostringstream filename;
-    // filename << "graph_" << put_time(localtime(&now_c), "%Y%m%d_%H%M%S") << ".txt";
     filename << "graph_" << num_nodes << "_" << num_edges << ".txt";
     ofstream outfile("./data/" + filename.str());
     outfile << num_nodes << endl;

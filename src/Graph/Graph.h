@@ -74,6 +74,7 @@ public:
     void computeAdjacencyMatrix();
 
     int getTotalEdgesWeight();
+    int getTotalNodesWeight();
 
     void computeMatrixDegree();
     void incrementDegree(int idNode);

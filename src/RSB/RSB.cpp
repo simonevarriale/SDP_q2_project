@@ -11,29 +11,17 @@ std::vector<bool> RSB(Graph& G, int p) {
     auto matAdj = G.getMatAdj();
 
     // compute Laplacian matrix
-    //std::cout << "Laplacian matrix:" << std::endl;
     for (int i = 0; i < sizeNodes; i++) {
         for (int j = 0; j < sizeNodes; j++) {
             L(i, j) = matDeg[i][j] - matAdj[i][j][0] * matAdj[i][j][1];
-            //std::cout << L(i, j) << " ";
         }
-        //std::cout << std::endl;
     }
 
     Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(L);
 
-    // Eigen::VectorXd eigenvalues = solver.eigenvalues().real();
-
     if (eigenSolver.info() == Eigen::Success) {
         Eigen::MatrixXd eigenvectors = eigenSolver.eigenvectors().real(); // ascending order
-        //std::cout << "Eigenvectors:\n" << eigenvectors << std::endl;
-        // Eigen::MatrixXd sortedEigenvectors = eigenvectors.rowwise().reverse(); //descending order
-        // std::cout << "Sorted eigenvectors:\n" << sortedEigenvectors << std::endl;
-        //std::cout << eigenvectors.col(1) << std::endl;
-        // Find the Fiedler vector (second smallest eigenvector)
         Eigen::VectorXd fiedlerVector = eigenvectors.col(1);
-        // std::cout << "Fiedler vector:\n" << fiedlerVector << std::endl;
-        // Find the median value of the Fiedler vector
         double medianValue = computeMedian(fiedlerVector);
         std::vector<bool> partition(L.rows());
         for (int i = 0; i < L.rows(); ++i) {
@@ -55,9 +43,6 @@ std::vector<bool> RSB(Graph& G, int p) {
                 weightB += G.getNodeWeight(i);
             }
         }
-
-        // std::cout << "Partition Balance Factor MLRSB: " << std::min(weightA, weightB) / std::max(weightA, weightB) << std::endl;
-        // std::cout << "Cut size MLRSB: " << calculateCutSize(G, partition) << std::endl;
 
         return partition;
 
