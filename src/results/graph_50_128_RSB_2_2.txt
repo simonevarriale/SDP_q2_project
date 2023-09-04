@@ -1,0 +1,14 @@
+Execution time graph reading: 0.00067225 seconds
+Total edges weight: 671
+
+Execution time partitioning: 0.0693438 seconds
+
+Partition 1: 1 0 0 1 0 1 0 1 1 1 1 0 0 1 0 1 1 1 1 1 1 0 0 0 1 1 0 0 1 1 0 1 0 0 0 0 0 1 0 1 1 1 0 0 0 0 0 1 1 0 
+Balance Factor: 0.785714 | Cut Size: 529
+
+Average Balance Factor: 0.785714
+Average Cut Size: 529
+Cut Size Between Partitions: 0
+CPU time used: 0 seconds 79971 microseconds
+Memory usage: 4407296 kilobytes | 4304 MBs | 4.20312 GBs
+CPU percentage: 96.8865%
