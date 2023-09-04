@@ -33,14 +33,12 @@ void computeLRow(int row, int sizeNodes, const std::vector<std::vector<int>>& ma
     }
 }
 
-
 std::vector<bool> Parallel_RSB(Graph& G, int numThreads) {
     int sizeNodes = G.num_of_nodes();
     Eigen::MatrixXd L(sizeNodes, sizeNodes);
     std::vector<std::thread> threads;
 
     G.computeMatrixDegree();
-    // G.computeAdjacencyMatrix();
     auto matDeg = G.getMatDegree();
     auto matAdj = G.getMatAdj();
 

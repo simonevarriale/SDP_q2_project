@@ -92,7 +92,8 @@ int main(int argc, char** argv) {
     partitionData.partitions = algorithmsRunner(G, algorithmName, numPartitions, numThreads);
 
     // Print the partitioning result
-    std::cout << std::endl << "Partitioning result on graph '" << inputGraphFile << "'" << std::endl;
+    // std::cout << "Balance Factor: " << calculateBalanceFactorPartitions(G, partitionData.partitions) << " | Cut Size: " << calculateCutSizePartitions(G, partitionData.partitions) << std::endl << std::endl;
+    std::cout << "Partitioning result on graph '" << inputGraphFile << "'" << std::endl;
     for (auto v : partitionData.partitions) {
         if (v.size() > 0) {
             i++;

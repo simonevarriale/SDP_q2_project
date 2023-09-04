@@ -84,6 +84,15 @@ double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA)
     return std::min(weightA, weightB) / std::max(weightA, weightB);
 }
 
+double calculateBalanceFactorPartitions(Graph& G, const std::vector<std::vector<bool>>& partitions) {
+    // q: how can I calculate a balance factor if I have multiple partition? the function calculateBalanceFactor only works for 2 partitions but I have up to 8
+    // a: I think you can calculate the balance factor for each partition and then take the average of them
+    // q: I need a new way to calculate the balance factor for multiple partitions
+    // a: I think you can calculate the balance factor for each partition and then take the average of them
+    //q: but then it would be low because the original function takes into account only if a node belongs to a partition or not. This makes sense if I only have 2 partitions but that's not the case
+    //a: I think you can calculate the balance factor for each partition and then take the average of them
+}
+
 bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA) {
     //it calculates balance factor and then checks whether the partition size is between 
     //r * |V| - s_max and r * |V| + s_max

@@ -4,7 +4,7 @@
 
 ## About The Project
 
-TODO
+Many applications of computer science involve processing large graphs, and often these graphs need to be partitioned into pieces that do not overlap. Dividing a graph into p partitions is called p-way partitioning. The goal is to minimize the number of edges that cross between partitions and to balance the sum of the weights of the nodes in each partition.
 
 <!-- GETTING STARTED -->
 
@@ -40,6 +40,8 @@ make compile
 ./graph_generator nodes_number edges_number
 ```
 
+This command will create a graph file in the data folder with the name graph_nodes_number_edges_number.txt. The weights of nodes and edges are random numbers between 1 and 10.
+
 #### Input file
 
 - ./data/graph_50_128.txt
@@ -66,6 +68,8 @@ make compile
 ./graph_partitioner  ./data/graph_50_128.txt pMLRSB 4 # pMLRSB with 4 partitions
 
 ./graph_partitioner  ./data/graph_50_128.txt Parallel_pMLRSB 4 4 # Parallel pMLRSB with 4 partitions and 4 threads
+
+./graph_generator 50 128 # Create a graph file with 50 nodes and 128 edges
 ```
 
 <!-- Folders' Content -->

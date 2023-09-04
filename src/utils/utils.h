@@ -31,6 +31,7 @@ struct PartitionData {
 double computeMedian(const Eigen::VectorXd& vector);
 double parallel_computeMedian(const Eigen::VectorXd& vector);
 double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA);
+double calculateBalanceFactorPartitions(Graph& G, const std::vector<std::vector<bool>>& partitions);
 bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA);
 void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains);
 void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& netGains);
