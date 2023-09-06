@@ -1,7 +1,6 @@
 #include "RSB.h"
 
-
-std::vector<bool> RSB(Graph& G, int p) {
+std::vector<bool> RSB(Graph& G) {
 
     int sizeNodes = G.num_of_nodes();
     Eigen::MatrixXd L(sizeNodes, sizeNodes);

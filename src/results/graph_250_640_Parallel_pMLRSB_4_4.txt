@@ -1,4 +1,4 @@
-Execution time graph reading: 0.00655179 seconds
+Execution time graph reading: 0.00647567 seconds
 Total nodes weight: 1419
 Total edges weight: 3400
 
@@ -16,9 +16,9 @@ Balance Factor: 0.38439 | Cut Size: 1332
 Partition 4: 0 0 1 0 0 1 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 1 0 0 1 0 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 1 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 1 1 0 0 0 0 1 1 1 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 
 Balance Factor: 0.304228 | Cut Size: 1175
 
-Average Balance Factor: 0.334011
+Average Balance Factor: 0.840102
 Average Cut Size: 1260.5
 Cut Size Between Partitions: 0
-CPU time used: 0 seconds 169004 microseconds
-Memory usage: 31064064 kilobytes | 30336 MBs | 29.625 GBs
-CPU percentage: 98.6464%
+CPU time used: 0 seconds 168917 microseconds
+Memory usage: 31539200 kilobytes | 30800 MBs | 30.0781 GBs
+CPU percentage: 98.6081%

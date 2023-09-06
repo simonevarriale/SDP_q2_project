@@ -4,7 +4,7 @@
 
 ## About The Project
 
-Many applications of computer science involve processing large graphs, and often these graphs need to be partitioned into pieces that do not overlap. Dividing a graph into p partitions is called p-way partitioning. The goal is to minimize the number of edges that cross between partitions and to balance the sum of the weights of the nodes in each partition.
+In computer science, it is common to work with large graphs that need to be divided into non-overlapping sections, known as partitions. This process is called p-way partitioning. Our aim is to minimize the sum of the weights of edges that cross between partitions and balance the sum of weights of nodes in each partition.
 
 <!-- GETTING STARTED -->
 

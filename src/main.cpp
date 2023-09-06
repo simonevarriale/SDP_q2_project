@@ -19,24 +19,28 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
     getrusage(RUSAGE_SELF, &usage1);
     auto startTime = std::chrono::high_resolution_clock::now();
     if (chosenAlgorithm == "RSB") {
-        partitions[0] = RSB(G, numPartitions);
+        partitions.resize(1);
+        partitions[0] = RSB(G);
     }
     else if (chosenAlgorithm == "pRSB") {
         partitions = pRSB(G, numPartitions);
     }
     else if (chosenAlgorithm == "MLRSB") {
+        partitions.resize(1);
         partitions[0] = MLRSB(G);
     }
     else if (chosenAlgorithm == "pMLRSB") {
         partitions = pMLRSB(G, numPartitions);
     }
     else if (chosenAlgorithm == "Parallel_RSB") {
+        partitions.resize(1);
         partitions[0] = Parallel_RSB(G, numThreads);
     }
     else if (chosenAlgorithm == "Parallel_pRSB") {
         partitions = Parallel_pRSB(G, numPartitions);
     }
     else if (chosenAlgorithm == "Parallel_MLRSB") {
+        partitions.resize(1);
         partitions[0] = Parallel_MLRSB(G, numPartitions);
     }
     else if (chosenAlgorithm == "Parallel_pMLRSB") {
@@ -61,7 +65,6 @@ std::vector<std::vector<bool>> algorithmsRunner(Graph G, std::string chosenAlgor
 
 int main(int argc, char** argv) {
     Graph G;
-
     int i = 0, numPartitions = 1, numThreads = 1;
     std::string algorithmName = "MLRSB", inputGraphFile = "./data/graph_500_1024.txt";
 
@@ -92,7 +95,6 @@ int main(int argc, char** argv) {
     partitionData.partitions = algorithmsRunner(G, algorithmName, numPartitions, numThreads);
 
     // Print the partitioning result
-    // std::cout << "Balance Factor: " << calculateBalanceFactorPartitions(G, partitionData.partitions) << " | Cut Size: " << calculateCutSizePartitions(G, partitionData.partitions) << std::endl << std::endl;
     std::cout << "Partitioning result on graph '" << inputGraphFile << "'" << std::endl;
     for (auto v : partitionData.partitions) {
         if (v.size() > 0) {
@@ -112,7 +114,7 @@ int main(int argc, char** argv) {
             partitionData.cutSizes.push_back(calculateCutSize(G, v));
         }
     }
-    partitionData.averageBalanceFactor = calculateAverageBalanceFactor(partitionData.balanceFactors);
+    partitionData.averageBalanceFactor = calculateBalanceFactorPartitions(G, partitionData.partitions);
     partitionData.averageCutSize = calculateAverageCutSize(partitionData.cutSizes);
     partitionData.fileName = "./results/graph_" + std::to_string(G.num_of_nodes()) + "_" + std::to_string(G.num_of_edges()) + "_" + algorithmName + "_" + std::to_string(numPartitions) + "_" + std::to_string(numThreads) + ".txt";
 

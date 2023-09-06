@@ -84,13 +84,29 @@ double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA)
     return std::min(weightA, weightB) / std::max(weightA, weightB);
 }
 
+int calculatePartitionsWeight(Graph& graph, const std::vector<bool>& partitionA) {
+    int weight = 0;
+    for (int i = 0; i < graph.num_of_nodes(); i++) {
+        if (partitionA[i]) {
+            weight += graph.getNodeWeight(i);
+        }
+    }
+    return weight;
+}
+
 double calculateBalanceFactorPartitions(Graph& G, const std::vector<std::vector<bool>>& partitions) {
-    // q: how can I calculate a balance factor if I have multiple partition? the function calculateBalanceFactor only works for 2 partitions but I have up to 8
-    // a: I think you can calculate the balance factor for each partition and then take the average of them
-    // q: I need a new way to calculate the balance factor for multiple partitions
-    // a: I think you can calculate the balance factor for each partition and then take the average of them
-    //q: but then it would be low because the original function takes into account only if a node belongs to a partition or not. This makes sense if I only have 2 partitions but that's not the case
-    //a: I think you can calculate the balance factor for each partition and then take the average of them
+    int partitionSize = partitions.size();
+    std::vector<int> partitionsWeight(partitionSize);
+    int maxPartitionWeight = 0;
+    int minPartitionWeight = std::numeric_limits<int>::max();
+
+    for (int i = 0; i < partitionSize; ++i) {
+        partitionsWeight[i] = calculatePartitionsWeight(G, partitions[i]);
+        maxPartitionWeight = std::max(maxPartitionWeight, partitionsWeight[i]);
+        minPartitionWeight = std::min(minPartitionWeight, partitionsWeight[i]);
+    }
+
+    return (double)minPartitionWeight / (double)maxPartitionWeight;
 }
 
 bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA) {
@@ -131,7 +147,6 @@ void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std:
                 gains[i] -= graph.getMatAdj()[i][j][1];
             }
         }
-        //gains[i] *= graph.getNodes().at(i).weight; // Multiply by node weight
     }
 }
 
@@ -544,7 +559,9 @@ void savePartitionDataToFile(const PartitionData& partitionData) {
                 outputFile << "Balance Factor: " << partitionData.balanceFactors[i] << " | Cut Size: " << partitionData.cutSizes[i] << std::endl << std::endl;
             }
         }
-        outputFile << "Average Balance Factor: " << partitionData.averageBalanceFactor << std::endl;
+        if (partitionData.averageBalanceFactor != 1)
+            outputFile << "Average Balance Factor: " << partitionData.averageBalanceFactor << std::endl;
+        else outputFile << "Average Balance Factor: " << partitionData.balanceFactors[0] << std::endl;
         outputFile << "Average Cut Size: " << partitionData.averageCutSize << std::endl;
         outputFile << "Cut Size Between Partitions: " << partitionData.cutSizePartitions << std::endl;
         outputFile << "CPU time used: " << partitionData.usage.ru_utime.tv_sec << " seconds " << partitionData.usage.ru_utime.tv_usec << " microseconds" << std::endl;

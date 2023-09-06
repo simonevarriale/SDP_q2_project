@@ -11,7 +11,7 @@
 #include <Eigen/LU>
 #include <cmath>
 
-std::vector<bool> RSB(Graph& G, int p);
+std::vector<bool> RSB(Graph& G);
 std::vector<std::vector<bool>> pRSB(Graph& G, int p);
 
 #endif
