@@ -51,14 +51,14 @@ This command will create a graph file in the data folder with the name graph_nod
 
 #### Algorithm name
 
-- MLRSB: Sequential MLRSB
-- pMLRSB: Sequential pMLRSB
-- Parallel_MLRSB: Parallel MLRSB
-- Parallel_pMLRSB: Parallel pMLRSB
-- RSB: Sequential RSB
-- pRSB: Sequential pRSB
-- Parallel_RSB: Parallel RSB
-- Parallel_pRSB: Parallel pRSB
+- MLRSB: Sequential Multi-Level Recursive Spectral Bisection
+- pMLRSB: Sequential p-way Multi-Level Recursive Spectral Bisection
+- Parallel_MLRSB: Parallel Multi-Level Recursive Spectral Bisection
+- Parallel_pMLRSB: Parallel p-way Multi-Level Recursive Spectral Bisection
+- RSB: Sequential Recursive Spectral Bisection
+- pRSB: Sequential p-way Recursive Spectral Bisection
+- Parallel_RSB: Parallel Recursive Spectral Bisection
+- Parallel_pRSB: Parallel p-way Recursive Spectral Bisection
 
 ## Usage
 
@@ -82,10 +82,10 @@ There are three main folders.
 
 It contains all the functions related to RSB and MLRSB algorithm.
 
-- MLRSB.c
-- Parallel_MLRSB.c
-- RSB.c
-- Parallel_RSB.c
+- MLRSB.cpp
+- Parallel_MLRSB.cpp
+- RSB.cpp
+- Parallel_RSB.cpp
 - MLRSB.h
 - Parallel_MLRSB.h
 - RSB.h
@@ -95,40 +95,40 @@ It contains all the functions related to RSB and MLRSB algorithm.
 
 It contains all utility functions.
 
-- utils.c
+- utils.cpp
 - utils.h
 
 ### Graph
 
 It contains both functions related to graphs.
 
-- Graph.c
+- Graph.cpp
 - Graph.h
 
 <!-- Files' Content -->
 
 ## Files' Content
 
-#### MLRSB.c
+#### MLRSB.cpp
 
-TODO
+It contains the main function `MLRSB` that implements the MLRSB algorithm. It takes as input the graph and it returns the best partitioning found. It also contains the function `pMLRSB` that implements the pMLRSB algorithm. It takes as input the graph and the number of partitions and it returns the best partitioning found.
 
-#### Parallel_MLRSB.c
+#### Parallel_MLRSB.cpp
 
-TODO
+It contains the main function `Parallel_MLRSB` that implements the Parallel MLRSB algorithm. It takes as input the graph and the number of threads and it returns the best partitioning found. It also contains the function `Parallel_pMLRSB` that implements the Parallel pMLRSB algorithm. It takes as input the graph, the number of partitions and the number of threads and it returns the best partitioning found.
 
-#### RSB.c
+#### RSB.cpp
 
-TODO
+It contains the main function `RSB` that implements the RSB algorithm. It takes as input the graph and it returns the best partitioning found. It also contains the function `pRSB` that implements the pRSB algorithm. It takes as input the graph and the number of partitions and it returns the best partitioning found.
 
-#### Parallel_RSB.c
+#### Parallel_RSB.cpp
 
-TODO
+It contains the main function `Parallel_RSB` that implements the Parallel RSB algorithm. It takes as input the graph and the number of threads and it returns the best partitioning found. It also contains the function `Parallel_pRSB` that implements the Parallel pRSB algorithm. It takes as input the graph, the number of partitions and the number of threads and it returns the best partitioning found.
 
-#### utils.c
+#### utils.cpp
 
-TODO
+It contains a set of utility functions. The most important are: `read_graph` that reads the graph from a text file, `uncoarsening` that performs the uncoarsening phase of the algorithm and other functions to calculate the quality of the partitioning.
 
-#### Graph.c
+#### Graph.cpp
 
-TODO
+It contains the class `Graph` that represents the graph. It contins functions to calculate the adjacency matrix, degree matrix and other utility functions to add/remove nodes and edges. Finally, it contains some functions to help with the coarsening phase.
