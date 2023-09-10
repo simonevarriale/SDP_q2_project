@@ -1,5 +1,5 @@
 **.DS_Store
 **.vscode
 **.xcodeproj
-main
+**.editorconfig
 graph_partitioner

@@ -2,6 +2,7 @@
 #define MLRSB_H
 
 #include "../Graph/Graph.h"
+#include "../utils/utils.h"
 #include <iostream>
 #include <fstream>
 #include <Eigen/Eigenvalues>

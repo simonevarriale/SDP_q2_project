@@ -22,7 +22,7 @@ There are three fundamental commands:
 make clean
 ```
 
-2. Compile code
+2. Compile code (using g++ compiler)
 
 ```sh
 make compile

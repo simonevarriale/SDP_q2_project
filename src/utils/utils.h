@@ -32,21 +32,13 @@ double computeMedian(const Eigen::VectorXd& vector);
 double parallel_computeMedian(const Eigen::VectorXd& vector);
 double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA);
 double calculateBalanceFactorPartitions(Graph& G, const std::vector<std::vector<bool>>& partitions);
-bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA);
-void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains);
-void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& netGains);
-int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, int node, bool moveToPartitionA);
-int calculateTotalWeight(Graph& graph);
+double calculateAverageBalanceFactor(const std::vector<double>& balanceFactors);
 int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
 int calculateCutSizePartitions(Graph& G, const std::vector<std::vector<bool>>& partitions);
+double calculateAverageCutSize(const std::vector<int>& cutSizes);
 std::vector<int> sortIndices(const Eigen::VectorXd& vec);
 void read_input(const std::string& filename, Graph* G);
 Graph coarsening(Graph& G);
-std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G);
-std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize);
-std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coarse, std::vector<bool> partition);
 void savePartitionDataToFile(const PartitionData& partitionData);
-double calculateAverageBalanceFactor(const std::vector<double>& balanceFactors);
-double calculateAverageCutSize(const std::vector<int>& cutSizes);
 
 #endif

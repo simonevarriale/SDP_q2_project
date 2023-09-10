@@ -1,8 +1,8 @@
 #ifndef RSB_H
 #define RSB_H
 
-#include "../utils/utils.h"
 #include "../Graph/Graph.h"
+#include "../utils/utils.h"
 #include <iostream>
 #include <fstream>
 #include <Eigen/Eigenvalues>

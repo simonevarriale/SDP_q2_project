@@ -1,9 +1,5 @@
 #include "MLRSB.h"
 
-extern int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA);
-extern double computeMedian(const Eigen::VectorXd& vector);
-extern Graph coarsening(Graph& G);
-
 bool hasImproved = true;
 
 Eigen::VectorXd interpolate(Eigen::VectorXd fv1, Eigen::MatrixXd L, int sizeNodes) {

@@ -33,8 +33,7 @@ double parallel_computeMedian(const Eigen::VectorXd& vector) {
         for (int i = 0; i < 2; i++) {
             threads.emplace_back([&sortedVector, &middleValues, mid, i, &mutex]() {
                 std::lock_guard<std::mutex> lock(mutex);
-                middleValues[i] = sortedVector(mid - 1 + i);
-                });
+                middleValues[i] = sortedVector(mid - 1 + i); });
         }
 
         // Wait for all threads to finish
@@ -52,24 +51,7 @@ double parallel_computeMedian(const Eigen::VectorXd& vector) {
     return medianValue;
 }
 
-//balance factor of 1.0 is perfectly balanced, 0.0 or 2.0 is completely unbalanced
-double calculateBalance(Graph& graph, const std::vector<bool>& partitionA) {
-    double weightA = 0.0;
-    double weightB = 0.0;
-
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        if (partitionA[i]) {
-            weightA += graph.getNodeWeight(i);
-        }
-        else {
-            weightB += graph.getNodeWeight(i);
-        }
-    }
-
-    return weightA / (weightA + weightB);
-}
-
-//balance factor of 1.0 is perfectly balanced, 0.0 or 2.0 is completely unbalanced
+// balance factor of 1.0 is perfectly balanced, 0.0 or 2.0 is completely unbalanced
 double calculateBalanceFactor(Graph& graph, const std::vector<bool>& partitionA) {
     double weightA = 0.0;
     double weightB = 0.0;
@@ -107,91 +89,6 @@ double calculateBalanceFactorPartitions(Graph& G, const std::vector<std::vector<
     }
 
     return (double)minPartitionWeight / (double)maxPartitionWeight;
-}
-
-bool isPartitionBalanced(Graph& graph, const std::vector<bool>& partitionA) {
-    //it calculates balance factor and then checks whether the partition size is between 
-    //r * |V| - s_max and r * |V| + s_max
-    //where r is the balance factor, |V| is the total number of nodes and s_max is the maximum node weight
-    double balanceFactor = calculateBalance(graph, partitionA);
-    int totalWeight = calculateTotalWeight(graph);
-    int maxNodeWeight = 0;
-
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        if (graph.getNodeWeight(i) > maxNodeWeight) {
-            maxNodeWeight = graph.getNodeWeight(i);
-        }
-    }
-
-    int lowerBound = balanceFactor * totalWeight - maxNodeWeight;
-    int upperBound = balanceFactor * totalWeight + maxNodeWeight;
-
-    int partitionWeight = 0;
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        if (partitionA[i]) {
-            partitionWeight += graph.getNodeWeight(i);
-        }
-    }
-
-    return (partitionWeight >= lowerBound && partitionWeight <= upperBound);
-}
-
-void computeInitialGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& gains) {
-    gains.assign(graph.num_of_nodes(), 0);
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        for (int j = 0; j < graph.num_of_nodes(); j++) {
-            if (partitionA[i] != partitionA[j]) {
-                gains[i] += graph.getMatAdj()[i][j][1];
-            }
-            else {
-                gains[i] -= graph.getMatAdj()[i][j][1];
-            }
-        }
-    }
-}
-
-// Function to compute the net gains for each node in set A
-void computeNetGains(Graph& graph, const std::vector<bool>& partitionA, std::vector<int>& netGains) {
-    auto matAdj = graph.getMatAdj();
-    int sizeNodes = graph.num_of_nodes();
-
-    for (int i = 0; i < sizeNodes; ++i) {
-        int gain = 0;
-        for (int j = 0; j < sizeNodes; ++j) {
-            if (partitionA[i] != partitionA[j]) {
-                gain += matAdj[i][j][1];
-            }
-            else {
-                gain -= matAdj[i][j][1];
-            }
-        }
-        netGains[i] = gain;
-    }
-}
-
-int calculateNodeGain(Graph& graph, const std::vector<bool>& partitionA, int node, bool moveToPartitionA) {
-    int gain = 0;
-
-    for (int i = 0; i < graph.num_of_nodes(); i++) {
-        if (partitionA[i] != moveToPartitionA) {
-            gain += graph.getMatAdj()[node][i][1];
-        }
-        else {
-            gain -= graph.getMatAdj()[node][i][1];
-        }
-    }
-    // gain *= graph.getNodes().at(node).weight; // Multiply by node weight
-    return gain;
-}
-
-// Helper function to calculate the total weight of all nodes
-int calculateTotalWeight(Graph& graph) {
-    int totalWeight = 0;
-    for (const auto& nodePair : graph.getNodes()) {
-        totalWeight += nodePair.second.weight;
-    }
-    // std::cout<<"Total weight of nodes: "<<totalWeight<<std::endl;
-    return totalWeight;
 }
 
 int calculateCutSize(Graph& graph, const std::vector<bool>& partitionA) {
@@ -240,9 +137,7 @@ std::vector<int> sortIndices(const Eigen::VectorXd& vec) {
     }
 
     // Sort indices based on the values in the vector
-    std::sort(indices.begin(), indices.end(), [&vec](int a, int b) {
-        return vec[a] < vec[b];
-        });
+    std::sort(indices.begin(), indices.end(), [&vec](int a, int b) { return vec[a] < vec[b]; });
 
     return indices;
 }
@@ -406,149 +301,15 @@ Graph coarsening(Graph& G) {
     return G1;
 }
 
-
-std::unordered_map<int, std::pair<int, int>> coarsenGraph(Graph& G) {
-    // Create a new graph to represent the coarser version
-
-    Graph G1;
-    std::map<int, Node> nodes = G.getNodes();
-
-    std::vector<std::pair<int, int>> M = heavyEdgeMatching(G);
-    std::unordered_map<int, std::pair<int, int>> coarseNodes;
-
-    auto matAdj = G.getMatAdj();
-
-    for (auto& edge : M) {
-        Coarse* coarse = new Coarse;
-        coarse->n1 = edge.first;
-        coarse->n2 = edge.second;
-        coarse->weight1 = nodes.find(edge.first)->second.weight;
-        coarse->weight2 = nodes.find(edge.second)->second.weight;
-        coarse->adj.push_back(matAdj[edge.first]);
-        coarse->adj.push_back(matAdj[edge.second]);
-        G1.setNode(G1.returnLastID(), coarse->weight1 + coarse->weight2, coarse);
-        coarseNodes.insert({ G1.returnLastID() - 1, {edge.first,edge.second } });
-        delete coarse;
-    }
-
-    // Process the unmatched nodes
-    for (const auto& nodePair : nodes) {
-        int nodeId = nodePair.first;
-        Node& node = nodes[nodeId];
-        // Check if the node is not part of any matching pair
-        bool isMatched = false;
-        for (const auto& edgePair : M) {
-            if (edgePair.first == nodeId || edgePair.second == nodeId) {
-                isMatched = true;
-                break;
-            }
-        }
-        // If the node is not matched, add it to G1 with nullptr for Coarse pointer
-        if (!isMatched) {
-            Coarse* coarse = new Coarse;
-            coarse->n1 = nodeId;
-            coarse->n2 = nodeId;
-            coarse->weight1 = nodes[nodeId].weight;
-            coarse->weight2 = nodes[nodeId].weight;
-            coarse->adj.push_back(matAdj[nodeId]);
-            G1.setNode(G1.returnLastID(), node.weight, coarse);
-            coarseNodes.insert({ G1.returnLastID() - 1, {nodeId,nodeId } });
-            delete coarse;
-        }
-    }
-
-    std::map<int, Node> newNodes = G1.getNodes();
-    std::set<std::pair<int, int>> addedEdges;
-
-    // settare edge del nuovo grafo
-    for (auto& edge : M) {
-        for (int i = 0; i < G.num_of_nodes(); i++) {
-            if (i == edge.first || i == edge.second) {
-                continue;
-            }
-            if (matAdj[edge.first][i][0] && matAdj[edge.second][i][0]) {
-                // dobbiamo unire edge del nodo trovato con il nodo dato dai 2 uniti
-                // cerco quindi l'id del nodo nuovo in G1 tramite gli id dei nodi che l'hanno formato
-                // forse potremmo fare una map per rendere la ricerca costante e non sequenziale
-                int id1 = G1.findNodeIdByCoarseIds(edge.first, edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1] + matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 1 && matAdj[edge.second][i][0] == 0 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.first);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.first][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-            else if (matAdj[edge.first][i][0] == 0 && matAdj[edge.second][i][0] == 1 && i != edge.first && i != edge.second) {
-                int id1 = G1.findNodeIdByCoarseSingleId(edge.second);
-                int id2 = G1.findNodeIdByCoarseSingleId(i);
-                if (id1 != -1 && id2 != -1) {
-                    if (addedEdges.find({ id1, id2 }) == addedEdges.end() && addedEdges.find({ id2, id1 }) == addedEdges.end()) {
-                        G1.setEdge(id1, id2, matAdj[edge.second][i][1]);
-                        addedEdges.insert({ id1, id2 }); // Add the edge to the set
-                    }
-                }
-            }
-        }
-    }
-
-    G1.setSizeNodes(G1.getNodes().size());
-    G1.setSizeEdges(G1.getEdges().size());
-    G1.computeAdjacencyMatrix();
-    G = G1;
-    return coarseNodes;
-}
-
-std::vector<bool> uncoarsening(Graph G1, std::vector<bool> partition, int graphSize) {
-    std::vector<bool> uncoarsenPartition(graphSize, false);
-    for (int i = 0; i < G1.num_of_nodes(); i++) {
-        auto ids = G1.getCoarseIdsById(i);
-        uncoarsenPartition[ids.first] = partition[i];
-        uncoarsenPartition[ids.second] = partition[i];
-    }
-    return uncoarsenPartition;
-}
-
-std::vector<bool> uncoarsening2(std::unordered_map<int, std::pair<int, int>> coarse, std::vector<bool> partition) {
-
-    int num = 0;
-
-    for (auto node : coarse) {
-        if (node.second.first != node.second.second) {
-            num += 2;
-        }
-        else {
-            num++;
-        }
-    }
-
-    std::vector<bool> uncoarsenPartition(num, false);
-
-    for (auto node : coarse) {
-        uncoarsenPartition[node.second.first] = partition[node.first];
-        uncoarsenPartition[node.second.second] = partition[node.first];
-    }
-
-    return uncoarsenPartition;
-}
-
 void savePartitionDataToFile(const PartitionData& partitionData) {
     std::ofstream outputFile(partitionData.fileName);
     if (outputFile.is_open()) {
         outputFile << "Execution time graph reading: " << partitionData.executionTimes[0] << " seconds" << std::endl;
         outputFile << "Total nodes weight: " << partitionData.totalNodesWeight << std::endl;
-        outputFile << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl << std::endl;
-        outputFile << "Execution time partitioning: " << partitionData.executionTimes[1] << " seconds" << std::endl << std::endl;
+        outputFile << "Total edges weight: " << partitionData.totalEdgesWeight << std::endl
+            << std::endl;
+        outputFile << "Execution time partitioning: " << partitionData.executionTimes[1] << " seconds" << std::endl
+            << std::endl;
         for (size_t i = 0; i < partitionData.partitions.size(); i++) {
             if (partitionData.partitions[i].size() > 0) {
                 outputFile << "Partition " << i + 1 << ": ";
@@ -556,12 +317,14 @@ void savePartitionDataToFile(const PartitionData& partitionData) {
                     outputFile << j << " ";
                 }
                 outputFile << std::endl;
-                outputFile << "Balance Factor: " << partitionData.balanceFactors[i] << " | Cut Size: " << partitionData.cutSizes[i] << std::endl << std::endl;
+                outputFile << "Balance Factor: " << partitionData.balanceFactors[i] << " | Cut Size: " << partitionData.cutSizes[i] << std::endl
+                    << std::endl;
             }
         }
         if (partitionData.averageBalanceFactor != 1)
             outputFile << "Average Balance Factor: " << partitionData.averageBalanceFactor << std::endl;
-        else outputFile << "Average Balance Factor: " << partitionData.balanceFactors[0] << std::endl;
+        else
+            outputFile << "Average Balance Factor: " << partitionData.balanceFactors[0] << std::endl;
         outputFile << "Average Cut Size: " << partitionData.averageCutSize << std::endl;
         outputFile << "Cut Size Between Partitions: " << partitionData.cutSizePartitions << std::endl;
         outputFile << "CPU time used: " << partitionData.usage.ru_utime.tv_sec << " seconds " << partitionData.usage.ru_utime.tv_usec << " microseconds" << std::endl;

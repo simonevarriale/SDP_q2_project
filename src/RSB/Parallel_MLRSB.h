@@ -2,6 +2,7 @@
 #define PARALLEL_MLRSB_H
 
 #include "../Graph/Graph.h"
+#include "../utils/utils.h"
 #include "MLRSB.h"
 #include <Eigen/Eigenvalues>
 #include <Eigen/Dense>

@@ -1,5 +1,4 @@
 #include "Parallel_MLRSB.h"
-#include "../utils/utils.h"
 
 std::mutex mutex;
 bool parallel_hasImproved = true;

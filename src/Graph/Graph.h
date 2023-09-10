@@ -84,9 +84,6 @@ public:
     int findNodeIdByCoarseSingleId(int n);
     std::pair<int, int> getCoarseIdsById(int nodeId);
 
-    std::unordered_set<int> findMaximalIndependentSet(const std::unordered_set<int>& nodes);
-    //void coarsenGraph();
-
     // Debug functions
     void printNodes();
     void printEdges();

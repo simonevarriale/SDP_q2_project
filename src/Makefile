@@ -10,7 +10,7 @@ run_args:
 	./graph_partitioner $(file) $(algorithm) $(partitions) $(threads)
 
 compile:
-	g++ -std=c++20 -I ./Libraries/include/eigen3 RSB/*.cpp Graph/*.cpp KL/*.cpp main.cpp utils/*.cpp -o graph_partitioner
+	g++ -std=c++20 -I ./Libraries/include/eigen3 RSB/*.cpp Graph/*.cpp main.cpp utils/*.cpp -o graph_partitioner
 
 clean:
 	rm -rf graph_partitioner

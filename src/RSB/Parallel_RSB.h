@@ -1,5 +1,6 @@
 #ifndef PARALLEL_RSB_H
 #define PARALLEL_RSB_H
+
 #include "../Graph/Graph.h"
 #include "../utils/utils.h"
 #include <Eigen/Eigenvalues>
