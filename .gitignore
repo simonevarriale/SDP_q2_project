@@ -3,3 +3,4 @@
 **.xcodeproj
 **.editorconfig
 graph_partitioner
+graph_generator
