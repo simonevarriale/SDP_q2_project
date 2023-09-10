@@ -1,4 +1,4 @@
-default: compile run
+default: compile compile_graph_generator
 
 compile_graph_generator:
 	g++ -std=c++20 Generator/graph_generator.cpp -o graph_generator
@@ -13,7 +13,7 @@ compile:
 	g++ -std=c++20 -I ./Libraries/include/eigen3 RSB/*.cpp Graph/*.cpp main.cpp utils/*.cpp -o graph_partitioner
 
 clean:
-	rm -rf graph_partitioner
+	rm -rf graph_partitioner graph_generator
 
 generate_graph:
 	./graph_generator $(n) $(e)

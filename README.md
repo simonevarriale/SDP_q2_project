@@ -25,22 +25,22 @@ make clean
 2. Compile code (using g++ compiler)
 
 ```sh
-make compile
+make
 ```
 
-3. Launch program
-
-```sh
-./graph_partitioner input_file algorithm_name partitions_number threads_number
-```
-
-4. Create graph file
+3. Create graph file
 
 ```sh
 ./graph_generator nodes_number edges_number
 ```
 
 This command will create a graph file in the data folder with the name graph_nodes_number_edges_number.txt. The weights of nodes and edges are random numbers between 1 and 10.
+
+4. Launch program
+
+```sh
+./graph_partitioner input_file algorithm_name partitions_number threads_number
+```
 
 #### Input file
 
