@@ -12,6 +12,8 @@
 #include <thread>
 #include <set>
 #include <utility>
+#include <sys/time.h> 
+#include <sys/resource.h>
 
 struct PartitionData {
     std::vector<std::vector<bool>> partitions;
